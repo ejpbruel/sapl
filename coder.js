@@ -5,37 +5,50 @@ Coder = new function() {
         var bind;
 
         if (node.type == "ident") {
-            bind = binds[node.text];
-            if (!bind)
-                throw "Reference to undefined symbol " + node.text;
-            return resolve(bind);
+            function resolve(node) {
+                bind = binds[node.text];
+                if (!bind)
+                    throw "Unable to resolve identifier " + node.text;
+                if (resolve.type == "ident")
+                    return binds[node.text] = resolve(bind)
+                else
+                    return bind;
+            }
+
+            return resolve(node);
         } else
             return node;
     }
 
     function wrap(node) {
-        if (node.type == "\\") {
-            var body = node;
+        var params;
+        var body;
 
-            node.params.forEach(function (param) {
-                body = {
-                    type : "@",
-                    fun  : body,
-                    arg  : param.name
-                };
-            });
-            return {
-                type     : "\\",
-                params   : node.params.map(function (param) {
-                    return {
-                        type   : "param",
-                        strict : false,
-                        name   : param.name
-                    };
-                }), body : body
-            };
-        } else
+        if (node.type != "\\");
             return node;
+        params = node.params;
+        if (!params.some(function (param) {
+            return param.strict;
+        }))
+            return node;
+        body = node;
+        params.forEach(function (param) {
+            body = {
+                type : "@",
+                fun  : body,
+                arg  : param.name
+            };
+        });
+        return {
+            type     : "\\",
+            params   : node.params.map(function (param) {
+                return {
+                    type   : "param",
+                    strict : false,
+                    name   : param.name
+                };
+            }), body : body
+        };
     }
 
     function force(node) {
@@ -67,7 +80,7 @@ Coder = new function() {
                 res = "function " + "(" + ")" + "{" +
                     code(defs) +
                     
-                    "return " + code(expr, true) + ";" +
+                    "return " + code(wrap(expr), true) + ";" +
                 "}" + "(" + ")";
                 defs.forEach(function (def) {
                     delete binds[def.name.text];
@@ -110,7 +123,7 @@ Coder = new function() {
                 }
                 tail = tail.reverse().map(wrap).map(code);
                 res = code(node);
-                if (params && params.length <= head.length) {
+                if (strict && params && params.length <= head.length) {
                     res = res + "(" + head.join() + ")";
                 } else
                     tail = head.concat(tail);
