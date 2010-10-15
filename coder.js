@@ -14,9 +14,10 @@ Coder = new function() {
     }
 
     function wrap(node) {
-        if (node.type == "\\") {
-            var body = node;
+        var body;
 
+        if (node.type == "\\") {
+            body = node;
             node.params.forEach(function (param) {
                 body = {
                     type : "@",
@@ -49,6 +50,7 @@ Coder = new function() {
 
     function code(node, strict) {
         var res,
+            index,
             head,
             tail,
             params;
@@ -58,7 +60,23 @@ Coder = new function() {
             case "defs":
                 return node.map(code).join("");
             case "=":
-                return "var " + code(name) + "=" + code(bind) + ";";
+                res = code(bind);
+                if (bind.type == "\\") {
+                    index = -1;
+                    for (node = bind.body; node.type == "@"; node = node.fun)
+                        --index;
+                    if (node.type == "ident" && bind.params.some(function (param) {
+                        ++index;
+                        return param.name.text == node.text;
+                    }) && index >= 0)
+                        res = "function " + "(" + ")" + "{" +
+                            "var " + "fun" + "=" + res + ";" +
+
+                            "fun.index" + "=" + index + ";" +
+                            "return " + "fun" + ";" +
+                        "}" + "(" + ")";
+                }
+                return "var " + code(name) + "=" + res + ";\n";
             case "let":
             case "letrec":
                 defs.forEach(function (def) {
@@ -110,7 +128,7 @@ Coder = new function() {
                 }
                 tail = tail.reverse().map(wrap).map(code);
                 res = code(node);
-                if (params && params.length <= head.length) {
+                if (strict && params && params.length <= head.length) {
                     res = res + "(" + head.join() + ")";
                 } else
                     tail = head.concat(tail);
