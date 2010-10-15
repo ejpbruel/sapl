@@ -20,37 +20,6 @@ Coder = new function() {
             return node;
     }
 
-    function wrap(node) {
-        var params;
-        var body;
-
-        if (node.type != "\\");
-            return node;
-        params = node.params;
-        if (!params.some(function (param) {
-            return param.strict;
-        }))
-            return node;
-        body = node;
-        params.forEach(function (param) {
-            body = {
-                type : "@",
-                fun  : body,
-                arg  : param.name
-            };
-        });
-        return {
-            type     : "\\",
-            params   : node.params.map(function (param) {
-                return {
-                    type   : "param",
-                    strict : false,
-                    name   : param.name
-                };
-            }), body : body
-        };
-    }
-
     function force(node) {
         if (node.type == "@") 
             return code(node, true);
@@ -58,6 +27,45 @@ Coder = new function() {
             return "Sapl.eval" + "(" + code(node) + ")";
         else
             return code(node);
+    }
+
+    function wrap(node) {
+        var params;
+        var body;
+
+        if (node.type == "\\") {
+            params = node.params;
+            if (!params.some(function (param) {
+                return param.strict;
+            }))
+                return node;
+            body = node;
+            params.forEach(function (param) {
+                body = {
+                    type    : "@",
+                    fun     : body,
+                    arg     : param.name
+                };
+            });
+            return {
+                type     : "\\",
+                params   : node.params.map(function (param) {
+                    return {
+                        type   : "param",
+                        strict : false,
+                        name   : param.name
+                    };
+                }), body : body
+            };
+        } else if (node.type == "?") {
+            return {
+                type    : "?",
+                cond    : node.cond,
+                lhs     : wrap(node.lhs),
+                rhs     : wrap(node.rhs)
+            };
+        } else
+            return node;
     }
 
     function code(node, strict) {
