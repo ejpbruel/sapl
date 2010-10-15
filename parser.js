@@ -80,7 +80,7 @@ Parser = new function () {
             }
         }
 
-        var mul     = infixl(["*", "/"], app),
+        var mul     = infixl(["*", "/", "%"], app),
             add     = infixl(["+", "-"], mul),
             sh      = infixl(["<<", ">>"], add),
             rel     = infixl(["<=", "<", ">=", ">"], sh),

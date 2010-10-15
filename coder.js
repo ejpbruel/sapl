@@ -5,24 +5,45 @@ Coder = new function() {
         var bind;
 
         if (node.type == "ident") {
-            bind = binds[node.text];
-            if (!bind)
-                throw "Reference to undefined symbol " + node.text;
-            return resolve(bind);
+            function resolve(node) {
+                bind = binds[node.text];
+                if (!bind)
+                    throw "Unable to resolve identifier " + node.text;
+                if (resolve.type == "ident")
+                    return binds[node.text] = resolve(bind)
+                else
+                    return bind;
+            }
+
+            return resolve(node);
         } else
             return node;
+    }
+
+    function force(node) {
+        if (node.type == "@") 
+            return code(node, true);
+        else if (node.type == "ident" && !resolve(node).strict) 
+            return "Sapl.eval" + "(" + code(node) + ")";
+        else
+            return code(node);
     }
 
     function wrap(node) {
         var body;
 
         if (node.type == "\\") {
+            params = node.params;
+            if (!params.some(function (param) {
+                return param.strict;
+            }))
+                return node;
             body = node;
-            node.params.forEach(function (param) {
+            params.forEach(function (param) {
                 body = {
-                    type : "@",
-                    fun  : body,
-                    arg  : param.name
+                    type    : "@",
+                    fun     : body,
+                    arg     : param.name
                 };
             });
             return {
@@ -35,17 +56,15 @@ Coder = new function() {
                     };
                 }), body : body
             };
+        } else if (node.type == "?") {
+            return {
+                type    : "?",
+                cond    : node.cond,
+                lhs     : wrap(node.lhs),
+                rhs     : wrap(node.rhs)
+            };
         } else
             return node;
-    }
-
-    function force(node) {
-        if (node.type == "@") 
-            return code(node, true);
-        else if (node.type == "ident" && !resolve(node).strict) 
-            return "Sapl.eval" + "(" + code(node) + ")";
-        else
-            return code(node);
     }
 
     function code(node, strict) {
@@ -85,7 +104,7 @@ Coder = new function() {
                 res = "function " + "(" + ")" + "{" +
                     code(defs) +
                     
-                    "return " + code(expr, true) + ";" +
+                    "return " + code(wrap(expr), true) + ";" +
                 "}" + "(" + ")";
                 defs.forEach(function (def) {
                     delete binds[def.name.text];
