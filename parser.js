@@ -63,6 +63,24 @@ Parser = new function () {
             return app;                
         }
 
+        function select() {
+            var select,
+                args;
+
+            if (select = accept("select")) {
+                select.fun = pre();
+                args = [];
+                while (["letrec", "let", "\\", "~",
+                        "!", "const", "ident", "("].some(function (type) {
+                    return token.type == type;   
+                }))
+                    args.push(pre());
+                select.args = args;
+                return select;
+            } else
+                return app();
+        }
+
         function infixl(types, term) {
             return function () {
                 var op,
@@ -80,7 +98,7 @@ Parser = new function () {
             }
         }
 
-        var mul     = infixl(["*", "/", "%"], app),
+        var mul     = infixl(["*", "/"], select),
             add     = infixl(["+", "-"], mul),
             sh      = infixl(["<<", ">>"], add),
             rel     = infixl(["<=", "<", ">=", ">"], sh),
@@ -113,19 +131,15 @@ Parser = new function () {
             };
         }
 
-        function params() {
-            var params = [];
-
-            while (!accept("->"))
-                params.push(param());
-            return params;
-        }
-
         function fun() {
-            var fun;
+            var fun,
+                params;
 
             if (fun = accept("\\")) {
-                fun.params = params();
+                params = [];
+                while (!accept("->"))
+                    params.push(param());
+                fun.params = params;
                 fun.body = expr();
                 return fun;
             } else

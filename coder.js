@@ -5,17 +5,36 @@ Coder = new function() {
         var bind;
 
         if (node.type == "ident") {
-            function resolve(node) {
-                bind = binds[node.text];
-                if (!bind)
-                    throw "Unable to resolve identifier " + node.text;
-                if (resolve.type == "ident")
-                    return binds[node.text] = resolve(bind)
-                else
-                    return bind;
-            }
+            bind = binds[node.text];
+            if (!bind)
+                throw "Reference to undefined symbol " + node.text;
+            return resolve(bind);
+        } else
+            return node;
+    }
 
-            return resolve(node);
+    function wrap(node) {
+        var body;
+
+        if (node.type == "\\") {
+            body = node;
+            node.params.forEach(function (param) {
+                body = {
+                    type : "@",
+                    fun  : body,
+                    arg  : param.name
+                };
+            });
+            return {
+                type     : "\\",
+                params   : node.params.map(function (param) {
+                    return {
+                        type   : "param",
+                        strict : false,
+                        name   : param.name
+                    };
+                }), body : body
+            };
         } else
             return node;
     }
@@ -29,50 +48,14 @@ Coder = new function() {
             return code(node);
     }
 
-    function wrap(node) {
-        var body;
-
-        if (node.type == "\\") {
-            params = node.params;
-            if (!params.some(function (param) {
-                return param.strict;
-            }))
-                return node;
-            body = node;
-            params.forEach(function (param) {
-                body = {
-                    type    : "@",
-                    fun     : body,
-                    arg     : param.name
-                };
-            });
-            return {
-                type     : "\\",
-                params   : node.params.map(function (param) {
-                    return {
-                        type   : "param",
-                        strict : false,
-                        name   : param.name
-                    };
-                }), body : body
-            };
-        } else if (node.type == "?") {
-            return {
-                type    : "?",
-                cond    : node.cond,
-                lhs     : wrap(node.lhs),
-                rhs     : wrap(node.rhs)
-            };
-        } else
-            return node;
-    }
-
     function code(node, strict) {
         var res,
             index,
+            i, j,
+            arg,
+            params,
             head,
-            tail,
-            params;
+            tail;
        
         with (node) 
             switch (type) {
@@ -84,14 +67,15 @@ Coder = new function() {
                     index = -1;
                     for (node = bind.body; node.type == "@"; node = node.fun)
                         --index;
-                    if (node.type == "ident" && bind.params.some(function (param) {
+                    if (node.type == "ident" 
+                            && bind.params.some(function (param) {
                         ++index;
                         return param.name.text == node.text;
                     }) && index >= 0)
                         res = "function " + "(" + ")" + "{" +
                             "var " + "fun" + "=" + res + ";" +
 
-                            "fun.index" + "=" + index + ";" +
+                            "fun" + "." + "index" + "=" + index + ";" +
                             "return " + "fun" + ";" +
                         "}" + "(" + ")";
                 }
@@ -104,7 +88,7 @@ Coder = new function() {
                 res = "function " + "(" + ")" + "{" +
                     code(defs) +
                     
-                    "return " + code(wrap(expr), true) + ";" +
+                    "return " + code(expr, true) + ";" +
                 "}" + "(" + ")";
                 defs.forEach(function (def) {
                     delete binds[def.name.text];
@@ -130,6 +114,27 @@ Coder = new function() {
             case "#":
                 return "(" + force(lhs) + ")" + text +
                        "(" + force(rhs) + ")";
+            case "select":
+                res = "";
+                for (i = 0; i < args.length; ++i) {
+                    arg = args[i];
+                    if (arg.type == "\\") {
+                        params = arg.params;
+                        for (j = 0; j < params.length; ++j) 
+                            res += "var " + code(params[j].name) + 
+                                    + "=" + "_[1]" + "[" + j + "]" + ";";
+                        res += "return " + code(arg.body) + ";";
+                    } else
+                        res += "return " + code(arg) + ";";
+                }
+                return "function " + "(" + ")" + "{" +
+                    "var " + "_" + "=" + force(fun) + ";" +
+
+                    "switch " + "(" + "_[0]" + "." + "index" + ")" + "{" +
+                        res +
+                    "}" + 
+                "}" + "(" + ")";
+                return res;
             case "@":
                 head = [];
                 tail = [];
