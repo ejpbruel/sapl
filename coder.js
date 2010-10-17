@@ -56,17 +56,15 @@ Coder = new function() {
             i, j,
             arg,
             params,
+            param,
             head,
             tail;
        
         with (node) 
             switch (type) {
             case "defs":
-                alert("defs");
                 return node.map(code).join("");
             case "=":
-                alert("=");
-                alert("coding " + name.text);
                 res = code(bind);
                 if (bind.type == "\\") {
                     index = -1;
@@ -87,7 +85,6 @@ Coder = new function() {
                 return "var " + code(name) + "=" + res + ";\n";
             case "let":
             case "letrec":
-                alert("letrec");
                 defs.forEach(function (def) {
                     symtab.push(def);
                 });
@@ -101,7 +98,6 @@ Coder = new function() {
                 });
                 return res;
             case "\\":
-                alert("\\");
                 params.forEach(function(param) {
                     symtab.push({
                         name : param.name, 
@@ -116,34 +112,32 @@ Coder = new function() {
                 });
                 return res;
             case "param":
-                alert("param");
                 return code(node.name);
             case "?":
-                alert("?");
                 return "(" + force(pred) + ")" + "?" +
                        "(" + force(lhs)  + ")" + ":" +
                        "(" + force(rhs)  + ")";
             case "#":
-                alert("#");
                 return "(" + force(lhs) + ")" + text +
                        "(" + force(rhs) + ")";
             case "select":
-                alert("select");
                 res = "";
                 for (i = 0; i < args.length; ++i) {
                     res += "case " + i + ":";
                     arg = args[i];
                     if (arg.type == "\\") {
                         params = arg.params;
-                        for (j = 0; j < params.length; ++j) 
-                            res += "var " + code(params[j].name) 
-                                    + "=" + "_[1]" + "[" + j + "]" + ";";
                         params.forEach(function(param) {
                             symtab.push({
                                 name    : param.name,
                                 bind    : param
                             });
                         });
+                        for (j = 0; j < params.length; ++j) { 
+                            param = params[j];
+                            res += "var " + code(param.name) 
+                                    + "=" + (param.strict ? "Sapl.eval" : "") + "(" + "_[1]" + "[" + j + "]" + ")" + ";";
+                        }
                         res += "return " + code(arg.body) + ";";
                         params.forEach(function (param) {
                             symtab.pop();
@@ -159,7 +153,6 @@ Coder = new function() {
                 "}" + "(" + ")";
                 return res;
             case "@":
-                alert("@");
                 head = [];
                 tail = [];
                 for (; node.fun; node = node.fun) 
@@ -188,7 +181,6 @@ Coder = new function() {
                 return res;
             case "const":
             case "ident":
-                alert("ident " + node.text);
                 return node.text;
             }
     }
