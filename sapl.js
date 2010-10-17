@@ -1,6 +1,7 @@
 Sapl = new function() {
     this.compile = function (str) {
         str = str.replace(/\n(?!\s)/g, ";");
+        alert(str);
         alert(code = Coder.code(Parser.parse(Lexer.lex(str))));
         eval.call(null, code);
     };

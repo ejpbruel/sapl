@@ -98,7 +98,7 @@ Parser = new function () {
             }
         }
 
-        var mul     = infixl(["*", "/"], select),
+        var mul     = infixl(["*", "/", "%"], select),
             add     = infixl(["+", "-"], mul),
             sh      = infixl(["<<", ">>"], add),
             rel     = infixl(["<=", "<", ">=", ">"], sh),
@@ -137,9 +137,12 @@ Parser = new function () {
 
             if (fun = accept("\\")) {
                 params = [];
-                while (!accept("->"))
+                while (["!", "ident"].some(function (type) {
+                    return token.type == type;
+                }))
                     params.push(param());
                 fun.params = params;
+                expect("->");
                 fun.body = expr();
                 return fun;
             } else
@@ -162,10 +165,20 @@ Parser = new function () {
 
         function def() {
             var name    = expect("ident"),
-                def     = expect("=");
+                params  = [],
+                def;
 
-            def.name    = name;
-            def.bind    = expr();
+            while (["!", "ident"].some(function (type) {
+                return token.type == type;
+            }))
+            params.push(param());
+            def = expect("=");
+            def.name = name;
+            def.bind = params.length == 0 ? expr() : {
+                type    : "\\",
+                params  : params,
+                body    : expr()
+            };
             return def;
         }
 
