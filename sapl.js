@@ -1,9 +1,25 @@
 Sapl = new function() {
+    var prelude = "\
+lt !a !b = a < b\n\
+le !a !b = a <= b\n\
+eq !a !b = a == b\n\
+ne !a !b = a != b\n\
+ge !a !b = a >= b\n\
+gt !a !b = a > b\n\
+\
+add a b = a + b\n\
+sub a b = a - b\n\
+mul a b = a * b\n\
+div a b = a / b\n\
+mod a b = a % b\
+    ";
+
     this.compile = function (str) {
-        str = str.replace(/\n(?!\s)/g, ";");
-        alert(str);
-        alert(code = Coder.code(Parser.parse(Lexer.lex(str))));
-        eval.call(null, code);
+        str = "letrec " + prelude + " in " + str;
+        str = str.replace(/\/\/.*\n/g, "");
+        str = str.replace(/\n(?!\s)/g, ",");
+        tree = (Parser.parse(Lexer.lex(str)));
+        return Coder.code(tree);
     };
 
     this.eval = function (expr) {

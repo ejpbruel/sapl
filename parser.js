@@ -64,10 +64,11 @@ Parser = new function () {
         }
 
         function select() {
-            var select,
-                args;
+            var select;
 
             if (select = accept("select")) {
+                var args;
+
                 select.fun = pre();
                 args = [];
                 while (["letrec", "let", "\\", "~",
@@ -132,11 +133,11 @@ Parser = new function () {
         }
 
         function fun() {
-            var fun,
-                params;
+            var fun;
 
             if (fun = accept("\\")) {
-                params = [];
+                var params = [];
+
                 while (["!", "ident"].some(function (type) {
                     return token.type == type;
                 }))
@@ -147,6 +148,35 @@ Parser = new function () {
                 return fun;
             } else
                 return cond();
+        }
+
+        function def() {
+            var name    = expect("ident"),
+                params  = [],
+                def;
+
+            while (["!", "ident"].some(function (type) {
+                return token.type == type;
+            }))
+                params.push(param());
+            def = expect("=");
+            def.name = name;
+            def.bind = params.length == 0 ? expr() : {
+                type    : "\\",
+                params  : params,
+                body    : expr()
+            };
+            return def;
+        }
+
+        function defs() {
+            var defs = [];
+
+            do
+                defs.push(def());
+            while (accept(","));
+            defs.type = "defs";
+            return defs;
         }
 
         function expr() {
@@ -163,35 +193,6 @@ Parser = new function () {
                 return fun();
         }
 
-        function def() {
-            var name    = expect("ident"),
-                params  = [],
-                def;
-
-            while (["!", "ident"].some(function (type) {
-                return token.type == type;
-            }))
-            params.push(param());
-            def = expect("=");
-            def.name = name;
-            def.bind = params.length == 0 ? expr() : {
-                type    : "\\",
-                params  : params,
-                body    : expr()
-            };
-            return def;
-        }
-
-        function defs() {
-            var defs = [];
-
-            do
-                defs.push(def());
-            while (accept(";"));
-            defs.type = "defs";
-            return defs;
-        }
-
-        return defs();
+        return expr();
     };
 }();

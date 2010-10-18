@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <style type="text/css">
+            textarea, input {
+                font-family : monospace;
+                font-size   : 12pt;
+            }
+        </style>
+        <script type="text/javascript" src="lexer.js"></script>
+        <script type="text/javascript" src="parser.js"></script>
+        <script type="text/javascript" src="coder.js"></script>
+        <script type="text/javascript" src="sapl.js"></script>
+        <script type="text/javascript">
+            function load(name) {
+                var sel     = document.getElementById("sel"),
+                    defs    = document.getElementById("defs");
+
+                defs.value = document.getElementById(name).value;
+            }
+
+            function compile() {
+                var defs    = document.getElementById("defs"),
+                    expr    = document.getElementById("expr"),
+                    code    = document.getElementById("code");
+
+                try {
+                    var str = "letrec " + defs.value + " in " + expr.value;
+
+                    code.value = "main " + "=" + Sapl.compile(str);
+                    alert("ok");
+                    return true;
+                } catch (ex) {
+                    code.value = ex;
+                    return false;
+                }
+            }
+
+            function execute() {
+                var code    = document.getElementById("code"),
+                    res     = document.getElementById("res");
+
+                if (!compile()) 
+                    return false;
+                try {
+                    var start   = new Date().getTime(),
+                        value   = eval.call(null, code.value),
+                        stop    = new Date().getTime();
+                    
+                    res.value = value + "(" + (stop - start) + "ms" + ")";
+                    return true;
+                } catch (ex) {
+                    res.value = ex;
+                    return false;
+                }
+            }
+        </script>
+    </head>
+    <body onload="load('primes')">
+        Select benchmark:
+        <select id="sel" onchange="load(value)">
+            <option value="fib">Fibonacci</option>
+            <option value="primes">Primes</option>
+        </select><br>
+        <textarea id="defs" cols="80" rows="25"></textarea><br>
+        <input id="expr" type="text" size="80" onkeypress="if (event.keyCode == 13) execute()"/><br>
+        <textarea id="code" cols="80" rows="25"><Generated code></textarea><br>
+        <button onclick="execute()">Execute</button>
+        <input id="res" type="text" size="73" value="<Result>"/><br>
+
+        <textarea id="fib" style="visibility:hidden">
+fib !n = n < 2 ? 1 : fib (n - 1) + fib (n - 2)
+        </textarea>
+
+        <textarea id="primes" style="visibility:hidden">
+nil f1 f2        = f1
+cons v1 v2 f1 f2 = f2 v1 v2
+
+head  !xs = select xs nil (\h t -> h)
+tail  !xs = select xs nil (\h t -> t)
+el !n !xs = n == 0 ? head xs : el (n - 1) (tail xs)
+
+nats    !n  = cons n (nats (n + 1))
+sieve p !ns = select ns nil (\n ns -> n % p == 0 ? sieve p ns : cons n (sieve p ns))
+primes      = sieve 2 (nats 2)
+main        = el 1000 primes
+        </textarea>
+    </body>
+</html>
