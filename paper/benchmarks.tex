@@ -1,7 +1,7 @@
 \section{Benchmarks} \label{sapljs:sec:benchmarks}
 In this section we present the results of several benchmark tests for the  \JavaScript implementation of \Sapl (which we will call \Sapljs) and a
 comparison with the \Java Applet implementation of \Sapl. 
-We ran the benchmarks on a Mac 2.x MHz machine running MacOS X10.x.
+We ran the benchmarks on a MacBook 2.26 MHz Core 2 Duo machine running MacOS X10.6.4.
 We used Google Chrome using the V8 \JavaScript engine to run the programs.
 At this moment V8 offers by far the fastest platform for running \Sapljs programs.
 However, there is a heavy competition on \JavaScript engines and they tend to become much faster.
@@ -9,7 +9,7 @@ The benchmark programs we used for the comparison are a subset of the benchmarks
 \Sapl with other interpreters and compilers in \cite{JKP}. In that comparison it turned out that \Sapl is at least twice as fast (and often even faster)
 as other interpreter like \textsf{Helium} , \textsf{Amanda}, \textsf{GHCi} and \textsf{Hugs}.
 Here we used the \Java Applet version for the comparison. This version is about 40\% slower than the \C  version
-of the interpreter described in \cite{JKP} (varying from 25 to 50\% between benchmarks).
+of the interpreter described in \cite{JKP} (varying from 25 to 50\% between benchmarks), but is still faster than other interpreters like \textsf{Amanda}, \textsf{Helium} and \textsf{GHCi} and \textsf{HUGS}.
 The \Java Applet and \JavaScript  version of  \Sapl  and all benchmark code can be found at \cite{SAPL}.
 We briefly repeat the description of the benchmark programs here.
 
@@ -29,11 +29,11 @@ definition) and taking the 1000th Hamming number, repeated 1000 times.
 Sort (10000 elements, merge sort is much faster, we therefore use a much larger example)
 \item {\bf Queens} Number of placements of 11 Queens on a 11 * 11 chess board.
 \item {\bf Knights} Finding a Knights tour on a 5 * 5 chess board.
-\item {\bf Parser Combinators} A parser for Prolog programs based on Parser
-Combinators parsing a xxx lines Prolog program.
 \item {\bf Prolog} A small Prolog interpreter based on unification only (no
 arithmetic operations), calculating ancestors in a four generation family tree,
-repeated xxx times.
+repeated 100 times.
+\item {\bf Parser Combinators} A parser for Prolog programs based on Parser
+Combinators parsing a 3500 lines Prolog program.
 \end{enumerate}
 %
 For sorting a list of size $n$ we used a source list consisting of numbers $1$

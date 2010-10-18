@@ -51,18 +51,5 @@ $\lambda$ expressions may only occur as arguments of a \textsf{select}. We stipu
 %The following EBNF describes the syntax of \Sapl.
 %\\ VOLLEDIGE EBNF OF ALLEEN EEN PAAR VOORBEELDEN
 
-\subsection{Co-operation between the Server and Client}
-A special feature of the \Sapl interpreter is that we can use a dedicated form of \textsf{Clean} 
-dynamics \cite{weea07n:PhD} for it. With dynamics it is possible to serialize a \textsf{Clean} expression 
-(closure) to a string, store the string somewhere, retrieve the string at a later moment, turn it into a 
-\textsf{Clean} expression again and execute it. We extended the dynamics features of \textsf{Clean} in 
-such a way that it is also possible to serialize an expression in a \textsf{Clean} executable and de-
-serialize it in the \Sapl interpreter (running the corresponding \Sapl program), and execute the 
-expression there. This is a powerful feature because it makes it possible to migrate execution of a 
-\textsf{Clean} program from server to client.  
-This feature makes it possible the decide dynamically at run-time where to execute tasks:
-at the server or at the client side.
-We also used this feature to do client-side event handling for interactive (graphical) web-applications 
-\cite{iEditors}. 
 
 
