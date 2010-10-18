@@ -1,0 +1,35 @@
+\section{Optimizations}\label{sapljs:sec:optimizations}
+Above we described a straightforward compilation scheme for \Sapl to \JS, where function calls (closures) are transformed to arrays.
+The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 
+and thereby forcing the evaluation of there arguments. 
+In this way we may impose unwanted eager sub-expressions into a program. 
+If a programmer does not want this he or she should use an indirection via an own-made auxiliary function.
+
+The \textsf{eval} functions is used to turn a closure into a real \JS function call and reduces a closure to head-normal-form.
+The \textsf{eval} functions has to do a case analysis on the structure of the closure expression.
+A closure expression can either be a primitive value (integer, boolean, string), a boxed value, a constructor value or a real function application closure.
+For the last case we measured that a direct \JS call is about 15 times faster than making the same call using the 
+\textsf{Sapl.eval} function on the closure representing the call. This overhead is significant. 
+Fortunately, in many cases we can do an analysis at compile time and replace a call of \textsf{eval} for a closure by the corresponding hard coded \JS.
+This transformation replaces:
+\begin{verbatim}
+Sapl.eval([f,[a1,..,an])
+\end{verbatim}
+by:
+\begin{verbatim}
+f(a1,..,an)
+\end{verbatim}
+This may only be done if \textsf{f} is a known function (thus not a variable) and the number of applied arguments matches the
+number of arguments of \textsf{f}.
+This can be done at every place where an explicit \textsf{eval} call is done:
+\begin{itemize}
+\item The first argument of a \textsf{select} or \textsf{if}.
+\item The arguments of an arithmetic operation.
+\end{itemize}
+But also at every place where a result is returned, because \textsf{eval} is called for this result immediately.
+
+
+Examples
+
+ 
+

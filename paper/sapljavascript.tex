@@ -1,0 +1,66 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                              %%
+%%  IFL 2010 submission Eddy Bruel, JM Jansen  		 				      %%
+%%                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{llncs}
+%\usepackage{makeidx}  % allows for indexgeneration
+\usepackage{graphicx}  % allows for graphics
+
+\usepackage{Clean}
+\usepackage{haskell}
+\usepackage{xspace}
+\usepackage{stmaryrd}
+
+\input{commands.tex}
+%\include{javalist}
+
+\begin{document}
+
+\pagestyle{headings}  % switches on printing of running heads
+\mainmatter              % start of the contributions
+
+\title{Implementing a non-strict purely Functional Language in \JavaScript}
+\titlerunning{Implementing a non-strict purely Functional Language in \JavaScript}
+%
+\author{Eddy Bru\"el\inst{1}, Jan Martin Jansen\inst{2}}
+%
+%
+\authorrunning{Eddy Bru\"el, Jan Martin Jansen}
+% abbreviated author list (for running head)
+%
+%%%% modified list of authors for the TOC (add the affiliations)
+\tocauthor{Eddy Bru\"el, Jan Martin Jansen}
+%
+\institute{Vrije Universiteit Amsterdam \and Faculty of Military Sciences, \\Netherlands Defence Academy, Den 
+Helder, the Netherlands
+\email{ejpbruel@gmail.com,jm.jansen.04@nlda.nl}}
+
+\maketitle              % typeset the title of the contribution
+
+\begin{abstract}
+This paper describes an implementation of a non-strict purely functional language in \JavaScript.
+This particular implementation is based on the translation of a high-level functional language such as 
+\Haskell or \Clean into \JavaScript via the intermediate functional language \Sapl. 
+The resulting code relies on the use of an evaluator function to emulate the non-strict semantics of 
+these languages.
+The speed of execution is competitive with that of the \Sapl interpreter itself 
+and other existing interpreters.
+% like \textsf{Helium} and  \textsf{GHCi} and better than that of \textsf{Hugs}.
+\end{abstract}
+
+\input{introduction}
+\input{motivation}
+\input{sapl}
+\input{sapljs}
+\input{benchmarks}
+\input{optimizations}
+\input{relatedWork}
+\input{conclusions}
+\bibliographystyle{abbrv}
+\bibliography{refs}
+\end{document}
+
+
+

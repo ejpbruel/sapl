@@ -1,0 +1,68 @@
+\section{The \Sapl Programming Language and Interpreter}\label{sapljs:sec:sapl}
+\Sapl stands for \textbf{S}imple \textbf{A}pplication \textbf{P}rogramming \textbf{L}anguage. The 
+basic version of \Sapl uses function application as only operation. To make this possible, algebraic 
+data types are implemented as functions. Details about how this is done can be found in \cite{JKP}.
+Here we only give a few examples.
+We start with the encoding of the list data type using functions, together with the \emph{sum} function.
+\begin{haskell}
+Nil f g      &=  f\\
+Cons x xs f g &= g x xs\\
+sum ys &= select ys 0   (\lambda x xs = x + sum xs)\\
+\end{haskell}\normalsize
+The \emph{select} operator semantically acts as the identity function and is only put there to enable a 
+more efficient implementation of the \Sapl interpreter (again see \cite{JKP}).
+The different cases in the \emph{select} are now functions that act on the arguments of a constructor.
+As a more complex example consider a pattern based \Haskell function like \emph{mappair}.  
+\begin{haskell}
+mappair f Nil         &\ zs           &= Nil \\
+mappair f (Cons x xs) &\ Nil          &= Nil \\
+mappair f (Cons x xs) &\ (Cons y ys)  &= Cons (f x y) (mappair f xs ys) 
+\end{haskell}\normalsize
+This definition can be transformed to the following \Sapl function (using the above definitions of \emph{Nil} and \emph{Cons}).
+\begin{haskell}
+mappair f as zs \\
+= select as  &Nil  \\
+	         & (\lambda x xs = select  &\ zs  \\
+				& & Nil  \\
+				& & (\lambda y ys = Cons (f x y) (mappair f xs ys)))\\
+\end{haskell}\normalsize 
+%
+\Sapl is used as an intermediate formalism for the interpretation of functional programming languages 
+like \Haskell and \Clean.  For \Clean we included a \Sapl back-end in the \Clean compiler that 
+generates \Sapl code that is ready to run in the \Sapl interpreter. 
+For the \Sapl interpreter versions both implemented in \Java and \textsf{C} exist. The \Java
+version can be loaded as an \Java Applet plug-in into web-browsers 
+and can be used for execution of \iTask tasks at the client side.
+
+\subsection{Some remarks on the definition of \Sapl}
+\Sapl is very similar to the core languages of \Haskell and \Clean. 
+Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics.
+Only constant let expressions are allowed (that may be cyclic).
+$\lambda$ expressions may only occur as arguments of a \textsf{select}. We stipulate this by using a $'='$ instead of a $'\to'$.
+%We will not give a full definition of \Sapl, but only stipulate it in characteristics.
+%he body of 
+%\Sapl is described by the following abstract syntax definition:
+%\begin{haskell}
+%function    &::= identifier \{identifier\}* '\hspace{-1.5mm}=' expr\\
+%expr        &::= application | \ '\lambda' \{identifier\}+ '\hspace{-1.5mm}=\hspace{-0.6mm}' expr\\
+%application &::= factor \{factor\}*\\
+%factor      &::= identifier | integer | \ '(' expr ')'
+%\end{haskell}
+%The following EBNF describes the syntax of \Sapl.
+%\\ VOLLEDIGE EBNF OF ALLEEN EEN PAAR VOORBEELDEN
+
+\subsection{Co-operation between the Server and Client}
+A special feature of the \Sapl interpreter is that we can use a dedicated form of \textsf{Clean} 
+dynamics \cite{weea07n:PhD} for it. With dynamics it is possible to serialize a \textsf{Clean} expression 
+(closure) to a string, store the string somewhere, retrieve the string at a later moment, turn it into a 
+\textsf{Clean} expression again and execute it. We extended the dynamics features of \textsf{Clean} in 
+such a way that it is also possible to serialize an expression in a \textsf{Clean} executable and de-
+serialize it in the \Sapl interpreter (running the corresponding \Sapl program), and execute the 
+expression there. This is a powerful feature because it makes it possible to migrate execution of a 
+\textsf{Clean} program from server to client.  
+This feature makes it possible the decide dynamically at run-time where to execute tasks:
+at the server or at the client side.
+We also used this feature to do client-side event handling for interactive (graphical) web-applications 
+\cite{iEditors}. 
+
+

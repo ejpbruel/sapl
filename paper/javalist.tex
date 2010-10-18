@@ -1,0 +1,20 @@
+\lstset{%
+    language=Java,%
+    basicstyle=\small,%\footnotesize,%\sffamily,%
+    keywordstyle=\bfseries\ttfamily,%
+    identifierstyle=\ttfamily,%
+    stringstyle=\itshape\ttfamily,%
+    commentstyle=\sffamily,%
+%    commentstyle=\rmfamily,%
+    showstringspaces=false,%
+    basewidth=0.55em,%
+%    frame=leftline,%
+    framexleftmargin=-5mm,%
+    tabsize=4,%
+    literate= {->}{{$\rightarrow$}}2%
+            {[]}{[$\ $]}2%
+}
+
+\lstnewenvironment{Java}{\lstset{language=Java}}{}
+\newcommand{\prog}[1]{\lstinline[language=Java]¦#1¦}
+\newcommand\CPP{C\kern -.12em \raise .6ex \hbox{\small{$+$}}\kern -.15em \raise .2ex \hbox{\small{$+$}}}

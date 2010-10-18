@@ -1,0 +1,69 @@
+\usepackage{listings}
+
+\lstdefinelanguage{Clean}{
+    alsoletter={ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_`1234567890},
+    alsoletter={~!@\#$\%^\&*-+=?<>:|\\.},
+   morekeywords={generic,implementation,definition,dynamic,module,import,from,where,in,of,case,let,infix,infixr,infixl,class,instance,with,if,derive},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[n]{/*}{*/},
+    morestring=[b]",
+    morestring=[b]',
+    emptylines=1,
+    basicstyle=\small,
+    identifierstyle=\small\ttfamily,
+    commentstyle=\itshape,
+    keywordstyle=\bfseries,
+    stringstyle=\ttfamily,
+    numbers=none,
+    showstringspaces=false,
+    basewidth=0.45em,
+    columns=[c]fixed,
+    keepspaces=true,
+    breaklines=false,
+    tabsize=4,
+    texcl=true,
+    escapeinside={(\#}{\#)},
+    literate=   %
+                % Basic Clean constructs
+                {\\}{{\hspace{2pt}$\lambda$\hspace{3pt}}}1
+                {A.}{{$\forall$}}1
+                {E.}{{$\exist$}}1
+                {>}{{$>$}}1
+                {<=}{{$\leq$}}1
+                {>=}{{$\geq$}}1
+                {<>}{{$\neq$}}1
+                {->}{{$\rightarrow$}}2
+                {<-}{{$\leftarrow$}}1
+                {=}{{$=$}}1
+                {~}{{$\sim$}}1
+               % {\#}{{$\sharp$}}1
+                {\{|}{{$\{\!|\!$}}1
+                {|\}}{{$\!|\!\}$}}1
+                {:=}{{$:=$}}2
+                {==}{{$==$}}2
+                {++}{{$+\!\!+$}}2
+                {+++}{{$+\!\!\!\!+\!\!\!\!+$}}2
+                {:==}{{$:==$}}3
+                {\{|*|\}}{{$\{\!|\!\!\star\!\!|\!\}$}}3
+                %
+                % Basic iTask constructs
+                {>||>}{{$\triangleright\triangleright$}}2
+                {>>=}{{\texttt{>>=}}}3
+                {>>|}{{\texttt{>>|}}}3
+                {?>>}{{\texttt{?>>}}}3
+                {!>>}{{\texttt{!>>}}}3
+                {-||-}{{\texttt{-||-}}}4
+                {.||.}{{\texttt{.||.}}}4
+                {.&&.}{{\texttt{.\&\&.}}}4
+}
+
+\newcommand{\CleanInline}[1]{\lstinline[language=Clean]¦#1¦}
+\newcommand{\CI}[1]{\CleanInline{#1}}
+
+\lstdefinestyle{numbers}{numbers=right, stepnumber=1, numberstyle=\tiny, numbersep=-5pt}
+
+\lstnewenvironment{CleanCode}{\lstset{language=Clean}}{}
+\lstnewenvironment{CleanCodeN}{\lstset{language=Clean,style=numbers}}{}
+\lstnewenvironment{CleanCodeB}{\lstset{language=Clean,frame=single}}{}
+\lstnewenvironment{CleanCodeNB}{\lstset{language=Clean,style=numbers,frame=single}}{}

@@ -1,0 +1,20 @@
+\section{Conclusion and Future Work}\label{sapljs:sec:conclusions}
+In this paper we evaluated the use of \JS as a target language for lazy functional programming languages like \Haskell of \Clean using the intermediate language \Sapl.
+Our main goal was to achieve an execution speed that is good enough to make this implementation of practical use. We showed that we could achieve a speed that is competitive with that of popular interpreters like the original \Sapl interpreter and that of Helium and GHCi.
+
+The implementation has a number of important advantages. 
+\begin{itemize}
+\item Functions for the source language are in a one-one correspondence with functions in\JS.
+\item Primitive data types like integer, string, boolean and char in the compiled program are equivalent to their \JS counter parts.
+\item  
+\item The generated program has access to 
+\end{itemize}
+
+Advantages: direct access to \JS functions. Special client libraries for Web pages manipulation.
+Integration of record types arrays etc.
+\subsection{Future Work}
+\begin{itemize}
+\item Automatic conversion of other data types like Records, ADT's, etc, between \Sapl and \JS.
+\item The addition of dedicated libraries to access to DOM etc.
+\item Further improvement of performance by making better compile time analysis (e.g. \JS currying instead of making closures).
+\end{itemize}

@@ -1,0 +1,60 @@
+\section{Introduction}\label{sapljs:sec:intro}
+Client-side processing for  web applications is inevitable for a desktop like experience
+of these applications.
+Non-strict purely functional languages like \Haskell (see \cite{Haskell}) and \Clean (see \cite{Clean}) 
+have many interesting properties, but their use on the client side of real world web-applications 
+has so far been limited. 
+This is at least partly due to the lack of browser support for these languages.
+Nowadays a significant part of software development today takes place in the browser, mostly 
+using \JavaScript. 
+Therefore, the availability of an implementation for non-strict functional languages 
+in the browser has the potential to significantly 
+improve the applicability of these languages in this area.
+Several implementations of non-strict purely functional languages in the browser already exist. 
+However, these implementations are either based on the use of \Java Applets for the implementation 
+of \Sapl, a client-side \Clean platform (see \cite{JKP,PJKA,iEditors}) or the use of a dedicated plug-in 
+for a \Haskell like functional language (see \cite{HaskellScript}).
+Both require the loading of a plug-in, which is often infeasible in environments where the user has no 
+control over the 
+configuration of his/her system. As an alternative to this, one might consider the use of \JavaScript. 
+A \JavaScript virtual machine is included with every major browser, so that installing a plug-in would no longer be required. 
+Although traditionally perceived as being slower than Java, the introduction of JIT compilers for \JavaScript has changed this picture significantly. 
+Modern implementations of \JavaScript, such as the V8 engine that ships with Google’s Chrome browser, offer performance that often rivals that of \Java.
+\JavaScript has been used as a target platform for the client-side implementation of other functional languages like HOP and LINKS (see \cite{HOP1,HOP2,LINKS1}). But these are strict functional languages, which simplifies the translation to \JavaScript considerably.
+
+It is possible to translate the \Java Applet implementation of the \Sapl interpreter to \JavaScript 
+using the Google Webtoolkit. 
+However, for this particular case, this is a naive solution. \JavaScript offers many features not available in Java that provide opportunities for a more efficient implementation. One of these is the fact that \JavaScript, unlike \Java, is a dynamic language, allowing for solutions that are based on compilation rather than interpretation. This paper describes an implementation of the non-strict purely functional language \Sapl in \JavaScript, that is written with these features in mind.
+
+We implemented a compiler that translates \Sapl functions to \JS functions. 
+The implementation is based on a coding of closures by \JS arrays and the just-in-time conversion 
+into a \JS function call of a closure by a dedicated \textsf{eval} function.
+We present several versions of our compilation scheme. 
+The first one represents a straightforward conversion of \Sapl to \JS functions.
+In a number of stages some optimizations are added to this conversion.
+The optimizations include: conversion of closures in direct calls in cases where this is allowed; inlining of arithmetic operations; the addition  and use
+of strictness annotations to further optimize the code.
+The final results show that it is indeed possible to realize a \Sapl to \JS conversion with code running at a speed that is competitive with that
+of the \Sapl interpreter itself and that of other interpreters.
+Summarizing we obtained the following results:
+\begin{itemize}
+\item The realization of a client-side implementation platform for non-strict functional programming
+languages without the use of a plug-in.
+\item This platform offers a performance that is competitive with that of the \Sapl interpreter
+and other interpreters for non-strict functional languages.
+\item The translation scheme is straightforward, using a one-to-one mapping of \Sapl onto \JS
+functions with a structure similar to that of the original functions.
+\item The generated code is compatible with \JS in a sense that primitive data types are represented in the same way. 
+Because of this generated code can interact with  \JS libraries and \JS functions may call generated functions as long as the arguments and results are primitive types.
+\end{itemize}
+The structure of the remainder of this paper is as follows:
+We start with a motivation for this work in Section \ref{sapljs:sec:motivation}.
+Section \ref{sapljs:sec:sapl} introduces \Sapl, the intermediate language we want to run on top of \JS.
+A first straightforward translation scheme is presented in Section \ref{sapljs:sec:sapljs}.
+In Section \ref{sapljs:sec:optimizations} we introduce a number of optimizations that can be applied to the translation scheme.
+A number of benchmark tests are presented in Section \ref{sapljs:sec:benchmarks}.
+Section \ref{sapljs:sec:related} discusses related work.
+We end with conclusion and look forward to future work in Section \ref{sapljs:sec:conclusions}.
+
+%The representations that are the result of this translation rely on the use of an evaluator function eval to implement non-strict semantics.
+%The eval function is used to reduce thunks (closures) on the moment they are needed. Using the dynamic compilation features of \JavaScript closures are turned into \JavaScript expressions that can be further executed.

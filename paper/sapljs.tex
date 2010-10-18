@@ -1,0 +1,58 @@
+\section{A \JS based implementation for  \Sapl}\label{sapljs:sec:sapljs}
+In Section \ref{sapljs:sec:motivation} we already motivated our choice for \JS as an implementation platform for \Sapl.
+Of course, it is possible to build a \Sapl interpreter in \JS in an equivalent way to that of the \Java version.
+But \JS offers a number of features that make it possible to do it in another and better way.
+First, it is possible to add \JS code to a running \JS program on-the-fly by using the \textsf{eval} functions.
+Second, it is possible to build function calls to \JS function dynamically by supply a function name and an array of arguments.
+Third, \JS has no static type check. Normally we consider this as a serous drawback, but here we can use this to build heterogeneous arrays,
+containing elements of different types.
+
+Therefore, we have chosen to build a compiler that translates \Sapl code to \JS and that exploits the above mentioned possibilities.
+In our translation scheme we map a \Sapl function onto a \JS function with the same name and number of arguments.
+The most important issue in the translation is the representation of closures and constructors.
+We decided to represent a closure: $f a_0 .. a_n$ by a \JS array: $[f,[a_0, .. ,a_n]]$.
+A constructor:  $C a_0 .. a_n$ by a \JS array: $[k,[C,a_0, .. ,a_n]]$, where $k$ is a number that is equal to the 
+to place in the original type definition of the constructor (see also below).
+The translation scheme is as follows:
+
+\begin{haskell}
+T\llbracket f a_0 .. a_n = body\rrbracket  &\equiv &\ function f(a_0, .. ,a_n) = T\llbracket body \rrbracket \\ 
+T\llbracket f a_0 .. a_n \rrbracket &\equiv  &\ [f, [T \llbracket a_0\rrbracket , .. ,T \llbracket a_n ] ]\\
+T\llbracket ::t = C_0  args_0  |   &\equiv  &\    function C_0(args_0){return [0,[C_0,args_0]];} .. \\
+\hspace{1.15cm}.. | C_0  args_0\rrbracket   & &\ function C_n(args_n){return [n,[C_n,args_n]];} \\ 
+T\llbracket select t a_0 .. a_n\rrbracket &\equiv  &\ var rr = eval(t); switch(eval(t)) {case 0: }\\
+more lines for the remainder
+\end{haskell}
+%
+Example translations:
+\begin{CleanCode}
+:: list = nil | cons x xs	
+filter f xs = select xs nil (\a as = if (f a) (cons a (filter f as)) (filter f as))
+\end{CleanCode}
+%
+Is translated to:
+\begin{CleanCode}
+function nil() {return [0, ['nil']];}
+function cons(x, xs) {return [1, ['cons', x, xs]];}
+
+function filter(f, xs) {
+    var ys = Sapl.eval(xs);
+    switch (ys[0]) {
+    case 0:
+        return nil();
+    case 1:
+        var a = ys[1][1],
+            as = ys[1][2];
+        return (Sapl.eval([f, [a]])) ? (cons(a, [filter, [f, as]])) : 
+                                       (Sapl.eval([filter, [f, as]]));
+    }
+}\end{CleanCode}
+The example shows how the structure of the function is preserved in the translation.
+The \emph{eval} function is used to evaluate closures.\\
+- it turns closures into function calls\\
+- it writes the result at the first position of the closure to enable sharing\\
+- primitive values are return ned unchanged\\
+- a boxed value is unboxed\\
+- built in functions on numbers, boolean, string, etc are executed by evaluating their arguments and applying the operation to them
+
+

@@ -1,0 +1,23 @@
+\section{Related Work}
+In this paper we extended the \textsf{iTask} toolkit with a generic framework for the inclusion of plug-ins, with the possibility to make calls from the plug-in to  \textsf{Clean} functions that can be executed on either client or server. 
+We are not aware of any other functional system that has these features. 
+However, there are functional approaches for handling web pages using the same formalism for server and client-side processing. Most of them compile to \textsf{JavaScript} for  client-side execution. 
+An example of this approach is \textsf{Hop} \cite{serm06:WebProgrammingWithHop,loif07:HopClientSideCompilation}. \textsf{Hop} is a dedicated web programming language and its syntax is \textsf{HTML}-like. In \textsf{Hop} it is also possible to specify a complete web application without the (direct) use of \textsf{JavaScript}. \textsf{Hop} uses two compilers, one for compiling the server-side program and one for compiling the client-side part. The client-side part is only used for executing the user interface. The application essentially runs on the client and may call services on the server. \textsf{Hop} uses syntactic constructions for indicating client and server part code. It is build on top of the Scheme programming language. In our case we do not have to extend \textsf{Clean}, but can write the entire web application in \textsf{Clean} itself. 
+In \cite{loif07:HopClientSideCompilation} it is shown that a reasonably good performance for the client-side functions in \textsf{Hop} can be obtained. For us, compiling to \textsf{JavaScript} is no option because \textsf{Clean} is lazy. Instead we use the \Sapl interpreter, which also has competitive performance as was shown in \cite{janj06:EfficientInterpretationDataTypesPatternsToFunctions_TFP06_SelectedPapers}  (chapter \ref{chap:SAPL}) and the graphics editor application.
+
+\textsf{Links} \cite{cooe06:WebProgrammingWithLinks} and its extension \textsf{formlets}  is a functional language-based web programming language. \textsf{Links} compiles to \textsf{JavaScript} for rendering \textsf{HTML} pages, and SQL to communicate with a back-end database. A \textsf{Links} program stores its session state at the client side. In a Links program, the keywords \texttt{client} and \texttt{server} force a top-level function to be executed at the client or server respectively. In \textsf{Links}, processes can be spawned and these processes can communicate via message passing. Client-server communication is implemented using \textsf{Ajax} technology, like we do. 
+In the \textsf{iData} and \textsf{iTask} toolkits, forms are generated generically for every data type, whereas in \textsf{Links} and \textsf{Formlets} these need to be coded by the programmer. 
+
+The \textsf{Flapjax} language \cite{FLAPJAX} is an implementation of functional reactive programming in \textsf{JavaScript}, with features comparable to those of \textsf{Hop}. Both are designed to create intricate web applications. In \textsf{Flapjax}, \textsf{Hop} and \textsf{Formlets} processing is directly attached to web form handling, which is comparable to the use of call-backs in \textsf{iEditors}. 
+
+A much more restricted approach has been implemented in \textsf{Curry} \cite{hanm07:PPDP}: only a very restricted subset of \textsf{Curry} is translated to \textsf{JavaScript} to handle client-side verification code fragments only.
+
+Summarizing the main differences with the other approaches are:
+\begin{itemize}
+	\item \textsf{iTask}/\textsf{iEditor} applications are just plain \textsf{Clean} applications, where web forms are generated from data types. The other approaches define dedicated web languages where processing is attached to web forms;
+	\item We can use the full \textsf{Clean} functionality at the client side because the \Sapl interpreter offers a full Clean platform. The other approaches rely on compilation to \textsf{JavaScript} with, in many cases, restrictions on the functions that can be compiled to \textsf{JavaScript};
+	\item \textsf {Clean-SAPL} dynamics offers a generic and flexible way to attach call-back handling to web forms and plug-ins. 
+	%start new
+	Where the other approaches use static annotations to indicate whether functions have to be executed on either client or server, in our approach this can be decided dynamically, depending on the events to be processed.
+\end{itemize}
+
