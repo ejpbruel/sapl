@@ -20,9 +20,32 @@ T\llbracket f a_0 .. a_n = body\rrbracket  &\equiv &\ function f(a_0, .. ,a_n) =
 T\llbracket f a_0 .. a_n \rrbracket &\equiv  &\ [f, [T \llbracket a_0\rrbracket , .. ,T \llbracket a_n ] ]\\
 T\llbracket ::t = C_0  args_0  |   &\equiv  &\    function C_0(args_0){return [0,[C_0,args_0]];} .. \\
 \hspace{1.15cm}.. | C_0  args_0\rrbracket   & &\ function C_n(args_n){return [n,[C_n,args_n]];} \\ 
-T\llbracket select t a_0 .. a_n\rrbracket &\equiv  &\ var rr = eval(t); switch(eval(t)) {case 0: }\\
-more lines for the remainder
+T\llbracket select t a_0 .. a_n\rrbracket &\equiv  &\ var rr = eval(t); switch(eval(t)) {case 0: }
 \end{haskell}
+
+\begin{align*}
+T\llbracket \begin{array}{cccccc}
+let(rec) & v_1    & = & B_1    &    & \\
+         & \ldots & = & \ldots &    & \\
+         & v_n    & = & B_n    & in & E
+\end{array} \rrbracket &\equiv \begin{array}{l}
+function\ (v_1, \ldots, v_n)\ \{ \\
+\ \ \ \ var\ x_1 = \llbracket B_1 \rrbracket; \\
+\ \ \ \ \ldots \\
+\ \ \ \ var\ x_n = \llbracket B_n \rrbracket; \\
+\\
+\ \ \ \ return\ \llbracket E \rrbracket; \\
+\}\ ()
+\end{array}
+\end{align*}
+
+\begin{align*}
+T\llbracket \lambda v_1 \: \ldots \: v_n \rightarrow E \rrbracket &= \begin{array}{l}
+function\ (v_1, \ldots, v_n)\ \{ \\
+\ \ \ \ return\ \llbracket E \rrbracket; \\
+\}
+\end{array}
+\end{align*}
 %
 Example translations:
 \begin{CleanCode}
