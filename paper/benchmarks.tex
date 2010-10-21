@@ -5,11 +5,11 @@ We ran the benchmarks on a MacBook 2.26 MHz Core 2 Duo machine running MacOS X10
 We used Google Chrome using the V8 \JavaScript engine to run the programs.
 At this moment V8 offers by far the fastest platform for running \Sapljs programs.
 However, there is a heavy competition on \JavaScript engines and they tend to become much faster.
-The benchmark programs we used for the comparison are a subset of the benchmarks  we used for comparing 
+The benchmark programs we used for the comparison are the same as the benchmarks  we used for comparing 
 \Sapl with other interpreters and compilers in \cite{JKP}. In that comparison it turned out that \Sapl is at least twice as fast (and often even faster)
-as other interpreter like \textsf{Helium} , \textsf{Amanda}, \textsf{GHCi} and \textsf{Hugs}.
+as other interpreters like \textsf{Helium} , \textsf{Amanda}, \textsf{GHCi} and \textsf{Hugs}.
 Here we used the \Java Applet version for the comparison. This version is about 40\% slower than the \C  version
-of the interpreter described in \cite{JKP} (varying from 25 to 50\% between benchmarks), but is still faster than other interpreters like \textsf{Amanda}, \textsf{Helium} and \textsf{GHCi} and \textsf{HUGS}.
+of the interpreter described in \cite{JKP} (varying from 25 to 50\% between benchmarks), but is still faster than the other interpreters mentioned above.
 The \Java Applet and \JavaScript  version of  \Sapl  and all benchmark code can be found at \cite{SAPL}.
 We briefly repeat the description of the benchmark programs here.
 
@@ -36,7 +36,7 @@ repeated 100 times.
 Combinators parsing a 3500 lines Prolog program.
 \end{enumerate}
 %
-For sorting a list of size $n$ we used a source list consisting of numbers $1$
+For sorting a list of size $n$ a source list is  used consisting of numbers $1$
 to $n$. The elements that are 0 modulo 10 are put before those that are 1 modulo
 $10$, etc.
 
@@ -47,63 +47,65 @@ heavy calculations, heavy memory usage).
 All times are machine measured. The programs where chosen in such a way that
 they ran for at least a second or longer, if possible. This to eliminate start-up 
 effects and to give the JIT compiler enough time to do its work. 
-The output was always converted to a single number (e.g. 
+In many cases the output was converted to a single number (e.g. 
 by summing the elements of a list) to eliminate the influence of slow output 
 routines.
 
 \subsection{Benchmark Tests}
-We ran several tests for several version of \Sapljs to evaluate the effectiveness of several
-optimizations. 
-We distinguish the following versions:
+We ran the tests for the following versions of \Sapl: 
 \begin{itemize}
-\item{\Sapl} The \Java Applet version of \Sapl.
-\item{\Sapljs plain} The  version using the simple compilation scheme and not using the conversion of arithmetical expressions 
-to their \JS counterparts, but instead using built-in functions the handle them. 
-\item{\Sapljs arith} The version using the simple compilation scheme with the conversion of arithmetical expressions.
-\item{\Sapljs opt} The version using the static detection of evals of closures.
-\item{\Sapljs strict} The previous version, including and using programmer made strictness annotations.
+\item{\Sapl} The \Java Applet version of \Sapl;
+\item{\Sapljs} The \Sapljs version including the normal form optimizations and the eager evaluation of arithmetic operations. 
+\item{\Sapljs nopt} The version not using these optimizations.
 \end{itemize}
-
-As an example to illustrate the effect of the different compilation schemes, consider the following \Sapl program and its translations.
-
-- sapl program
-
-- plain compilation
-
-- plain with arith
-
-- optimized
-
-- with strictness annotations
-
+We also  included the estimated percentage of time spend on memory management for the \Sapljs version.
 \input{figTests}
 %\input{memTests}
 
 \subsection{Evaluation of the Benchmark tests}
-Before analysing the result we first make some general remarks about the performance of \Java, \JS and the \Sapl interpreter which are relevant for
+Before analysing the results we first make some general remarks about the performance of \Java, \JS and the \Sapl interpreter which are relevant for
 a better understanding of the results. In general it is difficult to give absolute figures when comparing the speed of language implementations. 
-They often depend on the platform (processor), the used operating system running on it and the benchmarks used to compare. 
-Therefore, all numbers given represent rather rough estimations and should be used as global indications. 
-For example, the language shoot-out site (add reference) indicates that \Java 
-programs run between 3 and 5 times faster than \JS programs running on V8. 
-Our own measurements on the used platform indicate that in our case the factor is about 3.
+They often also depend on the platform (processor), the used operating system running on it and the particular benchmarks used to compare. 
+Therefore, all numbers given represent should be interpreted as global indications. 
 
-For a lazy functional language the creation of closures and the re-collection of them later on, often take a substantial part of program run-times.
+According to the the language shoot-out site \cite{SHOOTOUT} \Java 
+programs run between 3 and 5 times faster than \JS programs running on V8. 
+So a reimplementation of the \Sapl interpreter in \JS is expected to run between 3 to 5 times as slow as the \Sapl interpreter.
+A number of small tests on the platform we used indicated a speed difference of a factor of 3.
+
+We could not run all benchmarks as long as we wished because of stack limitations for V8 \JS in Google Chrome. 
+It supports a standard (not user modifiable) stack of only 30k at this moment.
+This is certainly enough for most \JS programs, but not for a number of our benchmarks that can be deeply recursive. 
+%Also forced \textsf{eval} calls can become deeply recursive. 
+This limited the size of the runs of the following benchmarks: interpreter, all sorting benchmarks, and the prolog and parse benchmark. 
+Another benchmark we used previously: \textsf{twice twice twice twice inc 0}, could not be run at all.
+
+For a lazy functional language the creation of closures and the re-collection of them later on, often takes a substantial part of program run-times.
 It is therefore important to do some special tests that say something the speed of memory (de-)allocation.
 The \Sapl interpreter uses a dedicated memory management unit (see \cite{JKP}) not depending on \Java memory management. 
 The better performance of the \Sapl interpreter in comparison with the other interpreters partly depends on its fast memory management.
 For the \JS implementation we rely on  the memory management of \JS itself.
 We did some dedicated tests that showed that memory allocation for the \Java\ \Sapl interpreter is about 4-6 times as fast as for the \JS implementation.
+Therefore, we included an estimation of the percentage of time spend on memory management for all benchmarks running using  the \Sapljs interpreter.
 
-Say something about percentage of time spend on memory management for benchmarks.
+\subsubsection{Results}
+The following benchmarks run faster than the \Sapl interpreter or at comparable speed: symbolic primes, Fibonacci, interpreter and knights. These benchmarks all benefit considerably from the optimizations, with Fibonacci as the most exceptional case (40 times faster).
+Note that in the optimized version of Fibonacci no time is spent on memory management.
 
-We could not run all benchmarks as long as we wished because of stack limitation for V8 \JS in Google Chrome. 
-It support a standard stack of only 30k at this moment.
-This is certainly enough for most \JS programs, but not for a number of our benchmarks that can be deeply recursive. 
-Also forced \textsf{eval} calls can become deeply recursive. 
-This limited the size of the runs of the following benchmarks: interpreter and all sorting benchmarks. 
-Another benchmark we used previously: \textsf{twice twice twice twice inc 0}, could not be run at all.
+The worst performing benchmark (5 times slower) is parser combinators. 
+This benchmarks profits only modestly  from the optimizations and spends relatively much time 
+in memory management operations. Is is also an atypical benchmark in the sense that almost all functions are higher order, which will not be the case for
+typical functional programs. Note, that for the original \Sapl interpreter this is one of the best benchmarks (see \cite{JKP}), 
+performing at a speed that is even competitive with compiler implementations. 
+%The original \Sapl interpreter realizes a pure graph-reduction implementation in a fast way. 
 
+All other benchmarks are between 1.5 and 2.3 times slower than the original \Sapl interpreter.
+
+We conclude that that the \Sapljs implementation offers a performance that is competitive with that of the \Sapl interpreter and therefore
+with other interpreters for lazy functional programming languages.
+
+
+\subsection{Alternative Memory Management?}
 For many \Sapljs examples a substantial part of their run-time is spent on memory management. 
 They can only run significantly faster after a more efficient memory management is realized.
 It is tempting to implement a memory management similar to that of \Sapl. 
@@ -111,14 +113,14 @@ But this memory management relies heavily on representing graphs by binary trees
 which does not fit with our model for turning closures into \JS function calls which depends heavily on using arrays to
 represent graphs.
 
-We may conclude that memory management take a considerably percentage of execution time for the \Sapljs programs than for
-the \Sapl interpreter. This explains why a number of the benchmarks execute slower than for the \Sapl interpreter, despite the fact
-that the resulting code can be compiled instead of being interpreted as in \Sapl.
+%We may conclude that memory management take a considerably percentage of execution time for the \Sapljs programs than for
+%the \Sapl interpreter. This explains why a number of the benchmarks execute slower than for the \Sapl interpreter, despite the fact
+%that the resulting code can be compiled instead of being interpreted as in \Sapl.
 
-For example, \textsf{fibonacci} natively implemented in \Java runs 3 times as fast than programmed natively for \JS.
-Adding strictness annotations in the \Sapl code of \textsf{fibonacci} takes care that the \JS translation result in the same code 
-as the native one. 
+%For example, \textsf{fibonacci} natively implemented in \Java runs 3 times as fast than programmed natively for \JS.
+%Adding strictness annotations in the \Sapl code of \textsf{fibonacci} takes care that the \JS translation result in the same code 
+%as the native one. 
 
-\subsection{Alternative Optimizations}
-In \JS it is possible to explicitly make curried versions of functions of mare than 1 argument.
+%\subsection{Alternative Optimizations}
+%In \JS it is possible to explicitly make curried versions of functions of mare than 1 argument.
 
