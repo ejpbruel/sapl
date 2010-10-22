@@ -11,26 +11,72 @@ Therefore, we have chosen to build a compiler that translates \Sapl code to \JS 
 In our translation scheme we map a \Sapl function onto a \JS function with the same name and number of arguments.
 The most important issue in the translation is the representation of closures and constructors.
 We decided to represent a closure: $f a_0 .. a_n$ by a \JS array: $[f,[a_0, .. ,a_n]]$.
-A constructor:  $C a_0 .. a_n$ by a \JS array: $[k,[C,a_0, .. ,a_n]]$, where $k$ is a number that represents 
-the place in the original type definition of the constructor.
-We illustrate the translation scheme by a number of examples.
-%The translation scheme \textsf{T} is defined as follows:
-%\begin{CleanCode}
-%T<f as = body>       = function f(as) {T<body>;}
-%T<let a = b1 in b2> = var a = T<b1>; return T<b2>
-%T<\as -> body>   = 
-%T<select a cases>    = var r = eval(a); switch(r[0]) {t<<cases>}
-%T<::D=C0 as0 |  .. | Cn asn = function C0(as0) {}
+A constructor:  $C a_0 .. a_n$ by a \JS array: $[k,[C,a_0, .. ,a_n]]$, where $k$ is a number that is equal to the 
+to place in the original type definition of the constructor (see examples).
+The translation scheme is as follows:
+
+\begin{haskell*}
+T\llbracket f a_0 .. a_n = body\rrbracket  &\equiv &\ function f(a_0, .. ,a_n) = T\llbracket body \rrbracket \\ 
+T\llbracket f a_0 .. a_n \rrbracket &\equiv  &\ [f, [T \llbracket a_0\rrbracket , .. ,T \llbracket a_n ] ]\\
+T\llbracket ::t = C_0  args_0     &\equiv  &\    function C_0(args_0){return [0,[C_0,args_0]];}  \\
+\hspace{1.15cm}..    & &\ .. \\ 
+\hspace{1.6cm}     C_n  args_n\rrbracket   & &\ function C_n(args_n){return [n,[C_n,args_n]];} \\ 
+T\llbracket select t a_0 .. a_n\rrbracket &\equiv  &\ var rr = eval(t); switch(eval(t)) {case 0: }
+\end{haskell*}
+
+\begin{haskell}
+T \llbracket k \rrbracket &\equiv k
+\end{haskell}
+
+\begin{haskell}
+T \llbracket v \rrbracket &\equiv v
+\end{haskell}
+
+\begin{align*}
+T \left \llbracket \begin{array}{cccccc}
+let(rec) & v_1    & = & B_1    &    & \\
+         & \ldots & = & \ldots &    & \\
+         & v_n    & = & B_n    & in & E
+\end{array} \right \rrbracket &\equiv \begin{array}{l}
+function\ (v_1, \ldots, v_n)\ \{ \\
+\ \ \ \ var\ x_1 = \llbracket B_1 \rrbracket; \\
+\ \ \ \ \ldots \\
+\ \ \ \ var\ x_n = \llbracket B_n \rrbracket; \\
+\\
+\ \ \ \ return\ \llbracket E \rrbracket; \\
+\}\ ()
+\end{array}
+\end{align*}
+
+\begin{align*}
+T\llbracket \lambda v_1 \: \ldots \: v_n \rightarrow E \rrbracket &= \begin{array}{l}
+function\ (v_1, \ldots, v_n)\ \{ \\
+\ \ \ \ return\ \llbracket E \rrbracket; \\
+\}
+\end{array}
+\end{align*}
+
+\begin{align*}
+T \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket &
+    \equiv [T \llbracket E_1 \rrbracket, T \llbracket E_2 \rrbracket, \ldots, T \llbracket E_n \rrbracket]]
+\end{align*}
+
+\begin{align*}
+T \llbracket op_1 \: E_1 \rrbracket &
+        \equiv op_1 \: eval(T \llbracket E_1 \rrbracket) \\
+T \llbracket E_1 \: op_2 \: E_2 \rrbracket &
+        \equiv eval(T \llbracket E_1 \rrbracket \: op_2 \: eval(T \llbracket E_2 \rrbracket) \\
+T \llbracket E_1 \: ? \: E_2 : E_3 \rrbracket &
+        \equiv eval(T \llbracket E_1 \rrbracket) \: ? \: eval(T \llbracket E_2 \rrbracket) : eval(T \llbracket E_3 \rrbracket)
+\end{align*}
 %
-%\end{CleanCode}s
-The following \Sapl definitions:
+Example translations:
 \begin{CleanCode}
 :: list = nil | cons x xs	
 filter f xs = select xs nil (\a as = if (f a) (cons a (filter f as)) (filter f as))
-fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
 \end{CleanCode}
 %
-are translated to:
+Is translated to:
 \begin{CleanCode}
 function nil() {return [0, ['nil']];}
 function cons(x, xs) {return [1, ['cons', x, xs]];}
@@ -38,38 +84,23 @@ function cons(x, xs) {return [1, ['cons', x, xs]];}
 function filter(f, xs) {
     var ys = Sapl.eval(xs);
     switch (ys[0]) {
-     case 0:
+    case 0:
         return nil();
-     case 1:
+    case 1:
         var a = ys[1][1],
             as = ys[1][2];
         return (Sapl.eval([f, [a]])) ? (cons(a, [filter, [f, as]])) : 
                                        (Sapl.eval([filter, [f, as]]));
     }
-}
+}\end{CleanCode}
+The example shows how the structure of the function is preserved in the translation.
+The \emph{eval} function is used to evaluate closures.\\
+- it turns closures into function calls\\
+- it writes the result at the first position of the closure to enable sharing\\
+- primitive values are return ned unchanged\\
+- a boxed value is unboxed\\
+- built in functions on numbers, boolean, string, etc are executed by evaluating their arguments and applying the operation to them
 
-function fac(n){
-    return (eq(n,0)) ? 1 : [mult,[n,[fac,[[sub,[n,1]]]]]];
-}
-\end{CleanCode}
-Built-in functions for arithmetic operations are pre-defined in the system.
-For example the \textsf{add} function  is defined as follows:
-\begin{CleanCode}
-function add(a,b) {return Sapl.eval(a) + Sapl.eval(b);}
-\end{CleanCode}
-The examples show how the structure of the original functions is preserved in the translation.
-
-\subsubsection{The eval function}
-Within the function definitions closures occur. Therefore we cannot use these definitions directly.
-The \textsf{eval} function is used to evaluate these closures. 
-\textsf{eval} must do a case analysis on the expression it is offered.
-\begin{itemize}
-\item A closures into function calls and eval is applied recursively to the result.
-\item it writes the result at the first position of the closure to enable sharing
-\item primitive values like integers, boolean and string are returned unchanged
-\item a boxed value (an array of length 1) is unboxed and eval is applied recursively
-\item built in functions on numbers, boolean, string, etc are executed by evaluating their arguments and applying the operation to them
-\end{itemize}
 \subsection{Normal Forms}
 Above we described a straightforward compilation scheme for \Sapl to \JS, where function calls (closures) are transformed to arrays.
 The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 

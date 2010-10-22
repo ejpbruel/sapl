@@ -36,9 +36,24 @@ and can be used for execution of \iTask tasks at the client side.
 
 \subsection{Some remarks on the definition of \Sapl}
 \Sapl is very similar to the core languages of \Haskell and \Clean. 
-Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics.
-Only constant let expressions are allowed (that may be cyclic).
-$\lambda$ expressions may only occur as arguments of a \textsf{select}. We stipulate this by using a $'='$ instead of a $'\to'$.
+Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics
+and give a few examples of \Sapl functions.
+The only keywords in \Sapl are \textsf{select} and \textsf{if}.
+In \Sapl only constant \textsf{let} expressions are allowed (that may be cyclic), \textsf{where} clauses are not allowed.
+\textsf{let} expressions may occur at the top level in a function and at the top level in  arguments of a  \textsf{select} and \textsf{if}.
+$\lambda$-expressions may only occur as arguments of a \textsf{select}, all other $\lambda$-expressions should be lifted to the main
+level. 
+For readability we adapted a \Clean like type definition style in \Sapl. 
+In \Sapl\  \textsf{select} and \textsf{if} are synonyms. 
+\begin{haskell}
+::boolean &= true\ |\ false\\
+::list &= nil | cons x xs\\
+ones &= let os = cons 1 os in os \\
+f a b &= let c = add a 1, d = add b 2 in add c d\\
+fac n &= if (eq n 0) 1 (mult n (fac (sub n 1)))
+\end{haskell}\normalsize
+Note that with the above definition of boolean we can use \textsf{select} instead of \textsf{if} in \Sapl. 
+
 %We will not give a full definition of \Sapl, but only stipulate it in characteristics.
 %he body of 
 %\Sapl is described by the following abstract syntax definition:
