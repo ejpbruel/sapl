@@ -24,11 +24,19 @@ T\llbracket select t a_0 .. a_n\rrbracket &\equiv  &\ var rr = eval(t); switch(e
 \end{haskell}
 
 \begin{align*}
-T\llbracket \begin{array}{cccccc}
+T \llbracket k \rrbracket &\equiv k
+\end{align*}
+
+\begin{align*}
+T \llbracket v \rrbracket &\equiv v
+\end{align*}
+
+\begin{align*}
+T \left \llbracket \begin{array}{cccccc}
 let(rec) & v_1    & = & B_1    &    & \\
          & \ldots & = & \ldots &    & \\
          & v_n    & = & B_n    & in & E
-\end{array} \rrbracket &\equiv \begin{array}{l}
+\end{array} \right \rrbracket &\equiv \begin{array}{l}
 function\ (v_1, \ldots, v_n)\ \{ \\
 \ \ \ \ var\ x_1 = \llbracket B_1 \rrbracket; \\
 \ \ \ \ \ldots \\
@@ -45,6 +53,20 @@ function\ (v_1, \ldots, v_n)\ \{ \\
 \ \ \ \ return\ \llbracket E \rrbracket; \\
 \}
 \end{array}
+\end{align*}
+
+\begin{align*}
+T \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket &
+    \equiv [T \llbracket E_1 \rrbracket, T \llbracket E_2 \rrbracket, \ldots, T \llbracket E_n \rrbracket]]
+\end{align*}
+
+\begin{align*}
+T \llbracket op_1 \: E_1 \rrbracket &
+        \equiv op_1 \: eval(T \llbracket E_1 \rrbracket) \\
+T \llbracket E_1 \: op_2 \: E_2 \rrbracket &
+        \equiv eval(T \llbracket E_1 \rrbracket \: op_2 \: eval(T \llbracket E_2 \rrbracket) \\
+T \llbracket E_1 \: ? \: E_2 : E_3 \rrbracket &
+        \equiv eval(T \llbracket E_1 \rrbracket) \: ? \: eval(T \llbracket E_2 \rrbracket) : eval(T \llbracket E_3 \rrbracket)
 \end{align*}
 %
 Example translations:
