@@ -2,32 +2,153 @@
 In Section \ref{sapljs:sec:motivation} we already motivated our choice for \JS as an implementation platform for \Sapl.
 Of course, it is possible to build a \Sapl interpreter in \JS in an equivalent way to that of the \Java version.
 But \JS offers a number of features that make it possible to do it in another and better way.
-First, it is possible to add \JS code to a running \JS program on-the-fly by using the \textsf{eval} functions.
+First, it is possible to add \JS code to a running \JS program on-the-fly by using the \textsf{eval} function.
 Second, it is possible to build function calls to \JS function dynamically by supply a function name and an array of arguments.
 Third, \JS has no static type check. Normally we consider this as a serous drawback, but here we can use this to build heterogeneous arrays,
 containing elements of different types.
 
 Therefore, we have chosen to build a compiler that translates \Sapl code to \JS and that exploits the above mentioned possibilities.
-In our translation scheme we map a \Sapl function onto a \JS function with the same name and number of arguments.
-The most important issue in the translation is the representation of closures and constructors.
-We decided to represent a closure: $f a_0 .. a_n$ by a \JS array: $[f,[a_0, .. ,a_n]]$.
-A constructor:  $C a_0 .. a_n$ by a \JS array: $[k,[C,a_0, .. ,a_n]]$, where $k$ is a number that represents 
-the place in the original type definition of the constructor.
-We illustrate the translation scheme by a number of examples.
-%The translation scheme \textsf{T} is defined as follows:
-%\begin{CleanCode}
-%T<f as = body>       = function f(as) {T<body>;}
-%T<let a = b1 in b2> = var a = T<b1>; return T<b2>
-%T<\as -> body>   = 
-%T<select a cases>    = var r = eval(a); switch(r[0]) {t<<cases>}
-%T<::D=C0 as0 |  .. | Cn asn = function C0(as0) {}
-%
-%\end{CleanCode}s
+
+In the original \Sapl interpreter constructors are implemented as functions.
+The \textsf{select} construct is used to optimize case selection based on constructors,
+but it is also possible to use constructors as functions.
+In the translation to \JS it turned out that it is more efficient to represent constructors in 
+a different way and it is therefore not possible to use constructors as functions. 
+%Therefore, we will use the more traditional 
+
+For the following \Sapl constructs we must define how they are translated to \JS:
+\begin{itemize}
+	\item function definitions;
+	\item constructor definitions;
+	\item function applications and chunks;
+	\item let constructs;
+	\item select constructs;
+	\item if constructs;
+	\item primitive values like: integer, real, boolean and string;
+	\item built-in functions like add, eq, etc.
+\end{itemize}
+
+\subsubsection{Function definitions} 
+In our translation scheme we map a \Sapl function onto a \JS function with the same name and same number of arguments.
+\begin{CleanCode}
+f a1 .. an = body
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+function f(a1,..,an) { tbody }
+\end{CleanCode}
+Here \texttt{tbody} is the result of the transformation of \texttt{body}.
+
+\subsubsection{Constructor definitions} 
+A constructor definition is transformed to a structure that can be used in a \texttt{select} construct to 
+select the right case. A \Sapl type definition containing constructors is translated as follows:
+\begin{CleanCode}
+:: typename = .. | Ck a0 .. an | ..
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+function Ck(a0,..,an) {return [k,[`Ck',a0,..,an]];}
+\end{CleanCode}
+Here \texttt{k} is a positive integer corresponding to the position of the constructor in
+the original type definition. The name of the constructor \texttt{`Ck'} is put into the result for printing purposes.
+
+
+\subsubsection{Function applications and chunks} 
+A chunk is a function application if the first argument is a function.
+An application or chunk is replaced by an array:
+\begin{CleanCode}
+a0 a1 .. an 
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+[ta0,[ta1,..,tan]]
+\end{CleanCode}
+Again, \texttt{tai} is the transformation of \texttt{ai}.
+We cannot replace a function application: \texttt{f a1 .. an} by: \texttt{f(a1,..,an)} because we would obtain
+an unwanted  eager semantics in this way!
+
+\subsubsection{\textsf{let} constructs} 
+For \texttt{let} constructs we should distinguish between cyclic and non-cyclic uses of \texttt{lets}.
+In case of a non-cyclic \texttt{let}, we can just use a \texttt{var} declaration for the let:
+\begin{CleanCode}
+let a = b in c
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+var a = tb; tc
+\end{CleanCode}
+In case a let is cyclic we make use of an in-line \JS function to mimic a back-pointer (see also examples):
+\begin{CleanCode}
+let a = expr_with_a in c
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+var a = texpr_with_a in tc
+\end{CleanCode}
+In \texttt{texpr\_with\_a}, \texttt{a} should be replaced by: 
+\begin{CleanCode}
+function() {return a;}
+\end{CleanCode}
+This construction works because \JS remembers within an in-line function its context (all what is on the stack).
+
+\subsubsection{\textsf{select} constructs} 
+A \texttt{select} is transformed to a \texttt{switch} statement:
+\begin{CleanCode}
+select a (\a0..an = bs) ..
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+var _ys = Sapl.eval(a);
+switch(_ys[0]) {
+	case 0: var a0 = _ys[1][1],..,  an = _ys[1][n+1];
+		tbs;
+		break;
+	..
+}
+\end{CleanCode}
+Evaluating the first argument of a \texttt{select} will result in a constructor array. 
+The first argument in the array represents the place of the constructor in its type definition
+and can therefore be used to select the right case in the definition.
+The arguments in the $\lambda$-expression of a case are bound to the corresponding
+arguments of the constructor in the \texttt{var} declaration (see also examples).
+
+\subsubsection{\textsf{if} constructs} 
+An \texttt{if} construct is transformed to an inline \JS \texttt{if} construct:
+\begin{CleanCode}
+if a b c
+\end{CleanCode}
+is transformed to:
+\begin{CleanCode}
+Sapl.eval(a) ? tb : c;
+\end{CleanCode}
+Here we use the fact that \Sapl's \texttt{True} and \texttt{False} are mapped onto \JS's \texttt{true} and \texttt{false}.
+
+\subsubsection{Built-in Functions}
+Built-in functions for arithmetic operations are pre-defined in the system.
+For example the \textsf{add} function  is defined as follows:
+\begin{CleanCode}
+function add(a,b) {return Sapl.eval(a) + Sapl.eval(b);}
+\end{CleanCode}
+The addition operator is, of course, strict in its arguments. 
+Therefore, \texttt{eval} is applied to these arguments, before applying the + operation.
+
+\subsubsection{Primitive values}
+Primitive values do not need to be transformed. There representation in \Sapl and \JS are the same.
+
+\subsubsection{Result Expressions}
+If an expression represents the result of a function, it should be preceded by the \JS keyword \texttt{return}.
+Examples of expressions that can be the result of an function are: the right-hand side of a function definition; 
+the right-hand side of a \texttt{let}; 
+the body of a $\lambda$-expression in a \texttt{select} case; 
+the \texttt{if} and \texttt{else} part of an \texttt{if} construct (see also examples).
+
+\subsection{Examples}
 The following \Sapl definitions:
 \begin{CleanCode}
 :: list = nil | cons x xs	
-filter f xs = select xs nil (\a as = if (f a) (cons a (filter f as)) (filter f as))
+ones = let os = cons 1 os in os
 fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
+sum as = select as 0 (\x xs = add x (sum xs))
 \end{CleanCode}
 %
 are translated to:
@@ -35,178 +156,204 @@ are translated to:
 function nil() {return [0, ['nil']];}
 function cons(x, xs) {return [1, ['cons', x, xs]];}
 
-function filter(f, xs) {
-    var ys = Sapl.eval(xs);
-    switch (ys[0]) {
-     case 0:
-        return nil();
-     case 1:
-        var a = ys[1][1],
-            as = ys[1][2];
-        return (Sapl.eval([f, [a]])) ? (cons(a, [filter, [f, as]])) : 
-                                       (Sapl.eval([filter, [f, as]]));
-    }
-}
+function ones(){var os = cons(1,function(){return os;}); return os;}
 
 function fac(n){
     return (eq(n,0)) ? 1 : [mult,[n,[fac,[[sub,[n,1]]]]]];
 }
-\end{CleanCode}
-Built-in functions for arithmetic operations are pre-defined in the system.
-For example the \textsf{add} function  is defined as follows:
-\begin{CleanCode}
-function add(a,b) {return Sapl.eval(a) + Sapl.eval(b);}
-\end{CleanCode}
-The examples show how the structure of the original functions is preserved in the translation.
 
-\subsubsection{The eval function}
-Within the function definitions closures occur. Therefore we cannot use these definitions directly.
-The \textsf{eval} function is used to evaluate these closures. 
+function sum(as){
+	var _ys = Sapl.eval(as);
+	switch(_ys[0]){
+		case 0: return 0;
+		case 1: var x = _ys[1][1], xs = _ys[1][2]; 
+				return [add,[x,[sum,[xs]]]];
+	}
+}
+
+\end{CleanCode}
+The examples show that the transformation is straightforward and 
+that the structure of the original functions is preserved in the translation.
+
+\subsubsection{The \texttt{eval} function}
+The generated \JS functions cannot be executed directly, because they contain closures.
+The \textsf{eval} function is used to evaluate these closures (turn them into normal forms)
 \textsf{eval} must do a case analysis on the expression it is offered.
-\begin{itemize}
-\item A closures into function calls and eval is applied recursively to the result.
-\item it writes the result at the first position of the closure to enable sharing
-\item primitive values like integers, boolean and string are returned unchanged
-\item a boxed value (an array of length 1) is unboxed and eval is applied recursively
-\item built in functions on numbers, boolean, string, etc are executed by evaluating their arguments and applying the operation to them
-\end{itemize}
-\subsection{Normal Forms}
-Above we described a straightforward compilation scheme for \Sapl to \JS, where function calls (closures) are transformed to arrays.
-The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 
-and thereby forcing the evaluation of there arguments. 
-In this way we may impose unwanted eager sub-expressions into a program. 
-If a programmer does not want this he or she should use an indirection via an own-made auxiliary function.
+It's action depends on the type of the this expression:
 
-The \textsf{eval} functions is used to turn a closure into a real \JS function call and reduces a closure to head-normal-form.
-The \textsf{eval} functions has to do a case analysis on the structure of the closure expression.
-A closure expression can either be a primitive value (integer, boolean, string), a boxed value, a constructor value or a real function application closure.
-For the last case we measured that a direct \JS call is about 15 times faster than making the same call using the 
-\textsf{Sapl.eval} function on the closure representing the call. This overhead is significant. 
-Fortunately, in many cases we can do an analysis at compile time and replace a call of \textsf{eval} for a closure by the corresponding hard coded \JS.
+\begin{itemize}
+\item Primitive values (int, real, boolean, string) are immediately returned. They are already in normal form.
+\item Constructor applications  are also immediately returned. They are also already in normal form.
+\item A closures \texttt{[f,[as]]} is turned into a function call \texttt{f(as)}.
+The result of this call is written back in the original array. In this way a correct use of sharing is guarantied.
+\texttt{eval} is applied recursively to the result.
+Of course, the call is only made if there are enough arguments. 
+If there are too few arguments the closure itself is returned (it is in normal form already)
+It there are too many arguments, a new closure
+is build using the result of the call and the remainder of the arguments.
+Also here \texttt{eval} is applied to the result. 
+\item Boxed values \texttt{[v]} are un-boxed (v is returned, only primitive values can be boxed).
+\item Curried applications \texttt{[[a,[as]],[bs]]} are turned into  \texttt{[a,[as++bs]]}.
+\texttt{eval} is applied recursively to the result.
+\end{itemize}
+
+\subsection{Normal Forms}
+Above we described a straightforward compilation scheme from \Sapl to \JS, 
+where function calls (closures) are transformed to arrays.
+%The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 
+%and thereby forcing the evaluation of there arguments. 
+%In this way we may impose unwanted eager sub-expressions into a program. 
+%If a programmer does not want this he or she should use an indirection via an own-made auxiliary function.
+The \texttt{eval} function is used to turn a closure into a real \JS function call and reduces a closure to head-normal-form.
+The \texttt{eval} function has to do a case analysis on the structure of the closure expression.
+%A closure expression can either be a primitive value (integer, boolean, string), a boxed value, 
+%a constructor value or a genuine function application.
+For a function application closure we measured that a direct \JS call is more than 10 times faster 
+than making the same call using the 
+\texttt{Sapl.eval} function on the closure representing the call. This overhead is significant. 
+Fortunately, in many cases we can do an analysis at compile time and replace a call of \texttt{eval} for a closure by the corresponding hard coded \JS.
 This transformation replaces:
-\begin{verbatim}
+\begin{CleanCode}
 Sapl.eval([f,[a1,..,an])
-\end{verbatim}
+\end{CleanCode}
 by:
-\begin{verbatim}
+\begin{CleanCode}
 f(a1,..,an)
-\end{verbatim}
-This may only be done if \textsf{f} is a known function (thus not a variable) and the number of applied arguments matches the
-number of arguments of \textsf{f}.
+\end{CleanCode}
+This may only be done if \texttt{f} is a known function (thus not a variable) and the number of applied arguments matches the
+number of arguments of \texttt{f}.
 This can be done at every place where an explicit \textsf{eval} call is done:
 \begin{itemize}
-\item The first argument of a \textsf{select} or \textsf{if}.
-\item The arguments of an arithmetic operation.
+\item The first argument of a \texttt{select} or \texttt{if};
+\item The arguments of an arithmetic operation;
+\item At every place where a resulting expression occurs within a \JS function (expressions after a \texttt{return}).
+For these expressions  \texttt{eval} is always called immediately after they are returned.
 \end{itemize}
-But also at every place where a result is returned, because \textsf{eval} is called for this result immediately.
-
-<<start of Eddy's part>>\\
-A major source of overhead in the current implementation are the calls to the
-evaluator function {\texttt eval}, generated by applying the translation scheme
-$T$ to built-in operators. To illustrate this, consider the following definition
-of the fibonacci function, $fib$, in SAPL:
-
+Using this optimization the translations of \texttt{sum} and \texttt{fac} now become:
 \begin{CleanCode}
-fib = \ n -> n < 2 ? 1 : fib (n - 1) + fib (n - 2)
-\end{CleanCode}
+function fac(n){
+	return (Sapl.eval(n) == 0) ? 1 : Sapl.eval(n) * fac(Sapl.eval(n)-1);
+}
 
-Applying $T$ to this expression yields the following code in JavaScript:
-
-\begin{CleanCode}
-var fib = function (n) {
-    return n < 2 ? 1 : eval([fib, [eval(n) - 1]]) + eval([fib, [eval(n) - 2]]);
+function sum(as){
+	var _ys = Sapl.eval(as);
+	switch(_ys[0]){
+		case 0: return 0;
+		case 1: var x = _ys[1][1], xs = _ys[1][2]; 
+		        return Sapl.eval(x)+sum(xs);
+	}
 }
 \end{CleanCode}
+In Section \ref{sapljs:sec:benchmarks} we show that this optimization can result in 
+a significant speed-up.
 
-Using this definition, the number of calls to {\texttt eval} is proportional to
-$O(n^2)$, which is prohibitive even for small values of $n$.
-
-
-In the above example, two thunks are created for the recursive applications of
-$fib$, only to be immediately reduced again to normal form because their value
-is required by the operator $+$. It should be obvious that these applications
-might as well be performed immediately in this case, thus avoiding both the
-construction of the thunks and the outer two calls to {\texttt eval}. In
-general, $T$ generates a call to {\texttt eval} when an expression is required
-to be in normal form (for instance because it is used as an operand to a
-built-in operator). However, if it is known at compile time that an expression
-already is in normal form, the call to {\texttt eval} is unnecessary, and can
-be avoided.
-
-To take advantage of this observation, a new translation scheme, $S$, is
-introduced, which is equivalent to $T$, except for the added restriction that
-expressions generated by $S$ should always be in normal form. To adhere to this
-restriction, the rule for function applications has to be rewritten as follows:
-
-\begin{equation*}
-S \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket \equiv
-\begin{cases}
-[T \llbracket E_1 \rrbracket, [T \llbracket E_2 \rrbracket,
-                               \ldots,
-                               S \llbracket E_n \rrbracket]] &
-        \text{if $n \le m$} \\
-T \llbracket E_1 \rrbracket(T \llbracket E_2 \rrbracket,
-                            \ldots,
-                            T \llbracket E_n \rrbracket) &
-        \text{if $n = m$} \\
-eval([ T \llbracket E_1 \rrbracket(T \llbracket E_2 \rrbracket,
-                                   \ldots,
-                                   T \llbracket E_n \rrbracket),
-                        [T \llbracket E_{m+1} \rrbracket,
-                         \ldots,
-                         T \llbracket E_n \rrbracket]]) &
-        \text{otherwise (if $n > m$)}
-\end{cases}
-\end{equation*}
-where $m$ is the arity of $E_1$.
-
-The above rule assumes that $E_1$ is a lambda abstraction, and that the arity of
-$E_1$ is known. The possibility that $E_1$ is actually an identifier introduces
-the need for a symbol table, which allows names to be resolved to their
-corresponding bindings. Furthermore, it is impossible to determine the arity of
-a function at compile time in the following to the cases:
-
-\begin{enumerate}
-\item The function was passed as an argument to the current function
-\item The function was returned as a the result of a function application
-\end{enumerate}
-
-In both cases, a call to {\texttt eval} is still necessary. The former case
-occurs when $n > m$, and is already handled in the above rule. The latter case
-occurs when $E_1$ is resolved to be a local identifier, and is handled by the
-following additional rule:
-
-\[ S \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket \equiv
-   eval(T \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket) \]
-
-Note how the behavior of $S$ closely mimics that of {\texttt eval}. Indeed,
-from a conceptual point of view, $S$ performs the call to {\texttt eval} at
-compile time, rather than run time. This allows the rule in $T$ for translating
-built-in operators to be rewritten as follows:
-
-\begin{align*}
-T \llbracket op_1 \: E_1 \rrbracket &
-        \equiv op_1 \: S \llbracket E_1 \rrbracket \\
-T \llbracket E_1 \: op_2 \: E_2 \rrbracket &
-        \equiv S \llbracket E_1 \rrbracket \: op_2 \:
-               S \llbracket E_2 \rrbracket \\
-T \llbracket E_1 \: ? \: E_2 \: : \: \rrbracket &
-        \equiv S \llbracket E_1 \rrbracket \: ? \:
-               S \llbracket E_2 \rrbracket \: : \:
-               S \llbracket E_3 \rrbracket 
-\end{align*}
-
-Observe that this new rule does not generate any calls to {\texttt eval}, and
-that $S$ only generates calls to {\texttt eval} if the arity of a function
-cannot be determined at compile time.
-
-In the above discussion, it was silently assumed that the result of a function
-application is always in head normal form. To meet this requirement, however,
-the rules for translating let(rec)-expressions and functions have to be
-rewritten such that the expression returned is translated using $S$, rather than
-$T$.
-
-\begin{verbatim}
-T <<f as>> = [f,[as]]
-T <<C as>> = 
-\end{verbatim}
+%\textit{<<start of Eddy's part>>\\
+%A major source of overhead in the current implementation are the calls to the
+%evaluator function {\texttt eval}, generated by applying the translation scheme
+%$T$ to built-in operators. To illustrate this, consider the following definition
+%of the fibonacci function, $fib$, in SAPL:
+%
+%\begin{CleanCode}
+%fib = \ n -> n < 2 ? 1 : fib (n - 1) + fib (n - 2)
+%\end{CleanCode}
+%
+%Applying $T$ to this expression yields the following code in \JS:
+%
+%\begin{CleanCode}
+%var fib = function (n) {
+%    return n < 2 ? 1 : eval([fib, [eval(n) - 1]]) + eval([fib, [eval(n) - 2]]);
+%}
+%\end{CleanCode}
+%
+%Using this definition, the number of calls to {\texttt eval} is proportional to
+%$O(n^2)$, which is prohibitive even for small values of $n$.
+%
+%
+%In the above example, two thunks are created for the recursive applications of
+%$fib$, only to be immediately reduced again to normal form because their value
+%is required by the operator $+$. It should be obvious that these applications
+%might as well be performed immediately in this case, thus avoiding both the
+%construction of the thunks and the outer two calls to {\texttt eval}. In
+%general, $T$ generates a call to {\texttt eval} when an expression is required
+%to be in normal form (for instance because it is used as an operand to a
+%built-in operator). However, if it is known at compile time that an expression
+%already is in normal form, the call to {\texttt eval} is unnecessary, and can
+%be avoided.
+%
+%To take advantage of this observation, a new translation scheme, $S$, is
+%introduced, which is equivalent to $T$, except for the added restriction that
+%expressions generated by $S$ should always be in normal form. To adhere to this
+%restriction, the rule for function applications has to be rewritten as follows:
+%
+%\begin{equation*}
+%S \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket \equiv
+%\begin{cases}
+%[T \llbracket E_1 \rrbracket, [T \llbracket E_2 \rrbracket,
+%                               \ldots,
+%                               S \llbracket E_n \rrbracket]] &
+%        \text{if $n \le m$} \\
+%T \llbracket E_1 \rrbracket(T \llbracket E_2 \rrbracket,
+%                            \ldots,
+%                            T \llbracket E_n \rrbracket) &
+%        \text{if $n = m$} \\
+%eval([ T \llbracket E_1 \rrbracket(T \llbracket E_2 \rrbracket,
+%                                   \ldots,
+%                                   T \llbracket E_n \rrbracket),
+%                        [T \llbracket E_{m+1} \rrbracket,
+%                         \ldots,
+%                         T \llbracket E_n \rrbracket]]) &
+%        \text{otherwise (if $n > m$)}
+%\end{cases}
+%\end{equation*}
+%where $m$ is the arity of $E_1$.
+%
+%The above rule assumes that $E_1$ is a lambda abstraction, and that the arity of
+%$E_1$ is known. The possibility that $E_1$ is actually an identifier introduces
+%the need for a symbol table, which allows names to be resolved to their
+%corresponding bindings. Furthermore, it is impossible to determine the arity of
+%a function at compile time in the following to the cases:
+%
+%\begin{enumerate}
+%\item The function was passed as an argument to the current function
+%\item The function was returned as a the result of a function application
+%\end{enumerate}
+%
+%In both cases, a call to {\texttt eval} is still necessary. The former case
+%occurs when $n > m$, and is already handled in the above rule. The latter case
+%occurs when $E_1$ is resolved to be a local identifier, and is handled by the
+%following additional rule:
+%
+%\[ S \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket \equiv
+%   eval(T \llbracket E_1 \: E_2 \: \ldots \: E_n \rrbracket) \]
+%
+%Note how the behavior of $S$ closely mimics that of {\texttt eval}. Indeed,
+%from a conceptual point of view, $S$ performs the call to {\texttt eval} at
+%compile time, rather than run time. This allows the rule in $T$ for translating
+%built-in operators to be rewritten as follows:
+%
+%\begin{align*}
+%T \llbracket op_1 \: E_1 \rrbracket &
+%        \equiv op_1 \: S \llbracket E_1 \rrbracket \\
+%T \llbracket E_1 \: op_2 \: E_2 \rrbracket &
+%        \equiv S \llbracket E_1 \rrbracket \: op_2 \:
+%               S \llbracket E_2 \rrbracket \\
+%T \llbracket E_1 \: ? \: E_2 \: : \: \rrbracket &
+%        \equiv S \llbracket E_1 \rrbracket \: ? \:
+%               S \llbracket E_2 \rrbracket \: : \:
+%               S \llbracket E_3 \rrbracket 
+%\end{align*}
+%
+%Observe that this new rule does not generate any calls to {\texttt eval}, and
+%that $S$ only generates calls to {\texttt eval} if the arity of a function
+%cannot be determined at compile time.
+%
+%In the above discussion, it was silently assumed that the result of a function
+%application is always in head normal form. To meet this requirement, however,
+%the rules for translating let(rec)-expressions and functions have to be
+%rewritten such that the expression returned is translated using $S$, rather than
+%$T$.
+%
+%\begin{verbatim}
+%T <<f as>> = [f,[as]]
+%T <<C as>> = 
+%\end{verbatim}}

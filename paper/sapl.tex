@@ -4,28 +4,25 @@ basic version of \Sapl uses function application as only operation. To make this
 data types are implemented as functions. Details about how this is done can be found in \cite{JKP}.
 Here we only give a few examples.
 We start with the encoding of the list data type using functions, together with the \emph{sum} function.
-\begin{haskell}
-Nil f g      &=  f\\
-Cons x xs f g &= g x xs\\
-sum ys &= select ys 0   (\lambda x xs = x + sum xs)\\
-\end{haskell}\normalsize
+\begin{CleanCode}
+Nil f g       =  f
+Cons x xs f g = g x xs
+sum ys        = select ys 0 (\x xs = x + sum xs)
+\end{CleanCode}
 The \emph{select} operator semantically acts as the identity function and is only put there to enable a 
 more efficient implementation of the \Sapl interpreter (again see \cite{JKP}).
 The different cases in the \emph{select} are now functions that act on the arguments of a constructor.
 As a more complex example consider a pattern based \Haskell function like \emph{mappair}.  
-\begin{haskell}
-mappair f Nil         &\ zs           &= Nil \\
-mappair f (Cons x xs) &\ Nil          &= Nil \\
-mappair f (Cons x xs) &\ (Cons y ys)  &= Cons (f x y) (mappair f xs ys) 
-\end{haskell}\normalsize
+\begin{CleanCode}
+mappair f Nil          zs           = Nil 
+mappair f (Cons x xs)  Nil          = Nil 
+mappair f (Cons x xs)  (Cons y ys)  = Cons (f x y) (mappair f xs ys) 
+\end{CleanCode}
 This definition can be transformed to the following \Sapl function (using the above definitions of \emph{Nil} and \emph{Cons}).
-\begin{haskell}
-mappair f as zs \\
-= select as  &Nil  \\
-	         & (\lambda x xs = select  &\ zs  \\
-				& & Nil  \\
-				& & (\lambda y ys = Cons (f x y) (mappair f xs ys)))\\
-\end{haskell}\normalsize 
+\begin{CleanCode}
+mappair f as zs 
+= select as Nil (\x xs = select zs Nil (\y ys = Cons (f x y) (mappair f xs ys)))
+\end{CleanCode}
 %
 \Sapl is used as an intermediate formalism for the interpretation of functional programming languages 
 like \Haskell and \Clean.  For \Clean we included a \Sapl back-end in the \Clean compiler that 
@@ -38,20 +35,22 @@ and can be used for execution of \iTask tasks at the client side.
 \Sapl is very similar to the core languages of \Haskell and \Clean. 
 Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics
 and give a few examples of \Sapl functions.
-The only keywords in \Sapl are \textsf{select} and \textsf{if}.
+The only keywords in \Sapl are \textsf{select}, \textsf{if} and \textsf{let}.
 In \Sapl only constant \textsf{let} expressions are allowed (that may be cyclic), \textsf{where} clauses are not allowed.
 \textsf{let} expressions may occur at the top level in a function and at the top level in  arguments of a  \textsf{select} and \textsf{if}.
 $\lambda$-expressions may only occur as arguments of a \textsf{select}, all other $\lambda$-expressions should be lifted to the main
 level. 
 For readability we adapted a \Clean like type definition style in \Sapl. 
-In \Sapl\  \textsf{select} and \textsf{if} are synonyms. 
-\begin{haskell}
-::boolean &= true\ |\ false\\
-::list &= nil | cons x xs\\
-ones &= let os = cons 1 os in os \\
-f a b &= let c = add a 1, d = add b 2 in add c d\\
-fac n &= if (eq n 0) 1 (mult n (fac (sub n 1)))
-\end{haskell}\normalsize
+%In \Sapl\  \textsf{select} and \textsf{if} are synonyms. 
+\begin{CleanCode}
+::boolean = true | false
+::list = nil | cons x xs
+
+ones = let os = cons 1 os in os 
+f a b = let c = add a 1, d = add b 2 in add c d
+fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
+filter f xs = select xs nil (\a as = if (f a) (cons a (filter f as)) (filter f as))
+\end{CleanCode}
 Note that with the above definition of boolean we can use \textsf{select} instead of \textsf{if} in \Sapl. 
 
 %We will not give a full definition of \Sapl, but only stipulate it in characteristics.
