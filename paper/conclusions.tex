@@ -2,28 +2,28 @@
 In this paper we evaluated the use of \JS as a target language for lazy functional programming languages like \Haskell of \Clean using the intermediate language \Sapl.
 We showed that we could achieve a speed for compiled benchmarks 
 that is competitive with that of the  \Sapl interpreter and other interpreters like \textsf{Amanda}, 
-\textsf{Helium} and \textsf{GHCi}.
+\textsf{Helium}, \textsf{Hugs} and \textsf{GHCi}.
 The implementation supports the full \Clean language (but not all libraries are supported).
 We tested the implementation against a large number of \Clean programs compiled with \Clean to \Sapl compiler. 
 The implementation has the following characteristics:
 \begin{itemize}
 \item The implementation is straightforward based on a simple transformation scheme and using a few simple to implement optimizations.
-\item The lazy semantics is maintained by the coding of closures by \JS arrays and using a special \textsf{eval} function to turn closures in function calls.
 \item Functions from the source are in one-one correspondence with \JS functions.
+\item The lazy semantics is maintained by the encoding of chunks by \JS arrays and using a special \textsf{eval} function to turn chunks in function calls.
 \item Primitive data types like integer, string, boolean and char in the compiled program are equivalent to their \JS counterparts, which simplifies interactions with native \JS functions.
 \end{itemize}
 
 \subsection{Future Work}
-We have planned to do the following future work:
+We have planned the following future work:
 \begin{itemize}
 \item Automatic conversion of other data types like Records, Arrays, etc, between \Sapl and \JS.
 \item The addition of dedicated libraries to access the DOM, etc.
 \item The creation of special client-side \iTask libraries.
-\item Further improvements of performance by making better compile time analysis (e.g. \JS currying instead of making closures),
+\item Further improvements of performance by making better compile time analysis (e.g. \JS currying instead of building chunks),
 the use of tail recursion, etc.
 \item Obtaining a better performance by making use of the strictness information the \Clean compiler generates.
 
 \section*{Acknowledgements}
-The authors would like to thank L\'aszl\'o Domoszlai for helping us at converting the original interpreter to one supporting the full \Sapl language and
+The authors would like to thank L\'aszl\'o Domoszlai for helping us with converting a preliminary version of the interpreter to one supporting the full \Sapl language and
 for realizing a nice web-based user interface for the interpreter.
 \end{itemize}

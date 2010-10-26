@@ -1,8 +1,8 @@
 \section{Alternative Optimizations}\label{sapljs:sec:optimizations}
 
-\subsection{Strictness Annotations}
+%\subsection{Strictness Annotations}
 Using the transformations described in the previous sections the definition
-of \texttt{fib}:
+of the Fibonacci function:
 \begin{CleanCode}
 fib n = if (gt 2 n) 1 (add (fib (sub n 1)) (fib (sub n 2)))
 \end{CleanCode} 
@@ -18,7 +18,7 @@ function fib(n) {
     return n < 2 ? 1 : fib(n - 1) + fib(n - 2)
 }
 \end{CleanCode}
-The calls to {\texttt eval} are now gone, which is a huge improvement (3 times as fast). Indeed,
+The calls to \texttt{eval} are now gone, which results in a huge improvement in performance (3 times as fast). Indeed,
 this is how \texttt{fib} would have been written, had it been defined in \JavaScript
 directly. In this particular example, the use of eager evaluation did not affect
 the semantics of the function. However, this is not true in general. 

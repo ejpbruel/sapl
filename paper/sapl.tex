@@ -1,18 +1,20 @@
 \section{The \Sapl Programming Language and Interpreter}\label{sapljs:sec:sapl}
 \Sapl stands for \textbf{S}imple \textbf{A}pplication \textbf{P}rogramming \textbf{L}anguage. The 
-basic version of \Sapl uses function application as only operation. To make this possible, algebraic 
-data types are implemented as functions. Details about how this is done can be found in \cite{JKP}.
-Here we only give a few examples.
-We start with the encoding of the list data type using functions, together with the \emph{sum} function.
+basic version of \Sapl has no special constructs for Algebraic Data Types. 
+To make this possible, they are implemented as functions. 
+Details about how this is done can be found in \cite{JKP}.
+Here we only give a few examples to show how this is realized.
+We start with the encoding of the list data type using functions, together with the \texttt{sum} function.
 \begin{CleanCode}
 Nil f g       =  f
 Cons x xs f g = g x xs
 sum ys        = select ys 0 (\x xs = x + sum xs)
 \end{CleanCode}
-The \emph{select} operator semantically acts as the identity function and is only put there to enable a 
-more efficient implementation of the \Sapl interpreter (again see \cite{JKP}).
-The different cases in the \emph{select} are now functions that act on the arguments of a constructor.
-As a more complex example consider a pattern based \Haskell function like \emph{mappair}.  
+The \texttt{select} keyword is put here as a hint for the compiler to enable a 
+more efficient implementation of the \Sapl interpreter (again see \cite{JKP}). 
+It semantically acts as the identity function.
+The different cases in the \texttt{select} are now functions that act on the arguments of a constructor.
+As a more complex example consider a pattern based \Haskell function like \texttt{mappair}.  
 \begin{CleanCode}
 mappair f Nil          zs           = Nil 
 mappair f (Cons x xs)  Nil          = Nil 
@@ -27,6 +29,7 @@ mappair f as zs
 \Sapl is used as an intermediate formalism for the interpretation of functional programming languages 
 like \Haskell and \Clean.  For \Clean we included a \Sapl back-end in the \Clean compiler that 
 generates \Sapl code that is ready to run in the \Sapl interpreter. 
+Recently, the \Clean compiler is extended. I can now handle \Haskell programs as well \cite{HASCLEAN}.
 For the \Sapl interpreter versions both implemented in \Java and \textsf{C} exist. The \Java
 version can be loaded as an \Java Applet plug-in into web-browsers 
 and can be used for execution of \iTask tasks at the client side.
@@ -35,23 +38,24 @@ and can be used for execution of \iTask tasks at the client side.
 \Sapl is very similar to the core languages of \Haskell and \Clean. 
 Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics
 and give a few examples of \Sapl functions.
-The only keywords in \Sapl are \textsf{select}, \textsf{if} and \textsf{let}.
-In \Sapl only constant \textsf{let} expressions are allowed (that may be cyclic), \textsf{where} clauses are not allowed.
-\textsf{let} expressions may occur at the top level in a function and at the top level in  arguments of a  \textsf{select} and \textsf{if}.
-$\lambda$-expressions may only occur as arguments of a \textsf{select}, all other $\lambda$-expressions should be lifted to the main
+The only keywords in \Sapl are \texttt{select}, \texttt{if} and \texttt{let}.
+In \Sapl only constant \texttt{let} expressions are allowed 
+(that may be cyclic, \Sapl has no separate \texttt{letrec}), \texttt{where} clauses are not allowed.
+\texttt{let} expressions may occur at the top level in a function and at the top level in  arguments of a  \texttt{select} and \texttt{if}.
+$\lambda$-expressions may only occur as arguments of a \texttt{select}, all other $\lambda$-expressions should be lifted to the main
 level. 
 For readability we adapted a \Clean like type definition style in \Sapl. 
 %In \Sapl\  \textsf{select} and \textsf{if} are synonyms. 
 \begin{CleanCode}
-::boolean = true | false
-::list = nil | cons x xs
+::boolean = True | False
+::list = Nil | Cons x xs
 
-ones = let os = cons 1 os in os 
+ones = let os = Cons 1 os in os 
 f a b = let c = add a 1, d = add b 2 in add c d
 fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
-filter f xs = select xs nil (\a as = if (f a) (cons a (filter f as)) (filter f as))
+filter f xs = select xs Nil (\a as = if (f a) (Cons a (filter f as)) (filter f as))
 \end{CleanCode}
-Note that with the above definition of boolean we can use \textsf{select} instead of \textsf{if} in \Sapl. 
+Note that with the above definition of boolean we can use \texttt{select} instead of \texttt{if} in \Sapl. 
 
 %We will not give a full definition of \Sapl, but only stipulate it in characteristics.
 %he body of 
