@@ -66,17 +66,20 @@ in section \ref{sapl:sec:sapljs}). An example of a complete \Sapl program is
 given here below:
 
 \begin{CleanCode}
-::boolean    = True | False
-::list       = Nil  | Cons x xs
+::boolean = True | False
+::list    = Nil  | Cons x xs
  
-ones         = let os = Cons 1 os
-               in os 
-f a b        = let c  = add a 1,
-                   d  = add b 2
-               in add c d
-fac n        = if (eq n 0) 1
-                           (mult n
-                                 (fac (sub n 1)))
+ones = let os = Cons 1 os
+        in os 
+
+f a b = let c = add a 1,
+            d = add b 2
+        in add c d
+
+fac n = if (eq n 0) 1
+                    (mult n
+                          (fac (sub n 1)))
+
 filter f xxs = select xxs Nil
                           (\x xs = if (f x) (Cons x
                                                   (filter f xs))
