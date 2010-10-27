@@ -6,7 +6,7 @@ Details about how this is done can be found in \cite{JKP}.
 Here we only give a few examples to show how this is realized.
 We start with the encoding of the list data type using functions, together with the \texttt{sum} function.
 \begin{CleanCode}
-Nil f g       =  f
+Nil f g       = f
 Cons x xs f g = g x xs
 sum ys        = select ys 0 (\x xs = x + sum xs)
 \end{CleanCode}
@@ -36,8 +36,8 @@ and can be used for execution of \iTask tasks at the client side.
 
 \subsection{Some remarks on the definition of \Sapl}
 \Sapl is very similar to the core languages of \Haskell and \Clean. 
-Therefore, we will not give a full definition of \Sapl, but only say something about it's main characteristics
-and give a few examples of \Sapl functions.
+Therefore, we do not give a full definition of \Sapl, but only say something about it's main characteristics
+and give a few examples to illustrate them.
 The only keywords in \Sapl are \texttt{select}, \texttt{if} and \texttt{let}.
 In \Sapl only constant \texttt{let} expressions are allowed 
 (that may be cyclic, \Sapl has no separate \texttt{letrec}), \texttt{where} clauses are not allowed.
@@ -47,15 +47,16 @@ level.
 For readability we adapted a \Clean like type definition style in \Sapl. 
 %In \Sapl\  \textsf{select} and \textsf{if} are synonyms. 
 \begin{CleanCode}
-::boolean = True | False
-::list = Nil | Cons x xs
+::boolean   = True | False
+::list      = Nil  | Cons x xs
 
-ones = let os = Cons 1 os in os 
-f a b = let c = add a 1, d = add b 2 in add c d
-fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
+ones        = let os = Cons 1 os in os 
+f a b       = let c = add a 1, d = add b 2 in add c d
+fac n       = if (eq n 0) 1 (mult n (fac (sub n 1)))
 filter f xs = select xs Nil (\a as = if (f a) (Cons a (filter f as)) (filter f as))
 \end{CleanCode}
-Note that with the above definition of boolean we can use \texttt{select} instead of \texttt{if} in \Sapl. 
+
+%Note that with the above definition of boolean we can use \texttt{select} instead of \texttt{if} in \Sapl. 
 
 %We will not give a full definition of \Sapl, but only stipulate it in characteristics.
 %he body of 

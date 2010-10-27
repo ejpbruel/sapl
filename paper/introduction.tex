@@ -1,10 +1,11 @@
 \section{Introduction}\label{sapljs:sec:intro}
 Client-side processing for  web applications is an important subject for research nowadays.
-Non-strict purely functional languages like \Haskell \cite{Haskell} and \Clean \cite{Clean}
+Non-strict purely functional languages like \Haskell %\cite{Haskell} 
+and \Clean %\cite{Clean}
 have many interesting properties, but their use on the client side of real world web-applications 
 has so far been limited. 
 This is at least partly due to the lack of browser support for these languages.
-Nowadays a significant part of software development takes place in the browser, mostly 
+Nowadays, a significant part of software development takes place in the browser, mostly 
 using \JavaScript. 
 Therefore, the availability of an implementation for non-strict functional languages 
 in the browser has the potential to significantly 
@@ -27,9 +28,9 @@ using the Google Webtoolkit.
 However, for this particular case, this is a naive solution. \JavaScript offers many features not available in Java that provide opportunities for a more efficient implementation. One of these is the fact that \JavaScript, unlike \Java, is a dynamic language, allowing for solutions that are based on compilation rather than interpretation. This paper describes an implementation of the non-strict purely functional language \Sapl in \JavaScript, that is written with these features in mind.
 
 We implemented a compiler that translates \Sapl to \JS functions. 
-The implementation is based on representing unevaluated function applications (chunks) by \JS arrays 
+The implementation is based on representing unevaluated expressions (chunks) by \JS arrays 
 and the just-in-time conversion 
-into a \JS function call of a chunk by a dedicated \textsf{eval} function.
+into a \JS expression of a chunk and the evaluation of it by a dedicated \textsf{eval} function.
 We present two versions of our compilation scheme. 
 The first one represents a straightforward conversion of \Sapl to \JS functions.
 In the second version a number of optimization are added.
@@ -41,12 +42,13 @@ of the \Sapl interpreter itself and that of other interpreters.
 Summarizing we obtained the following results:
 \begin{itemize}
 \item The realization of a client-side implementation platform for the non-strict functional programming
-language \Clean without the use of a plug-in.
+language \Clean, via the intermediate language \Sapl, without the use of a plug-in.
 \item This platform offers a performance that is competitive with that of the \Sapl interpreter
 and other interpreters for non-strict functional languages.
 \item The translation scheme is straightforward, using a one-to-one mapping of \Sapl onto \JS
 functions.
-\item The encoding relies on a simple representation of chunks by \JS arrays and the use of a \texttt{eval} function to turn chunks in function applications at the moment the result is needed.
+\item The encoding relies on a simple representation of unevaluated expressions by \JS arrays 
+and the use of an \texttt{eval} function to turn them back into expressions and to evaluate them at the moment the result is needed.
 \item The generated code is compatible with \JS in a sense that primitive data types 
 are represented in the same way. 
 Generated functions share the same name-space as those defined in native \JS.
@@ -58,7 +60,7 @@ Section \ref{sapljs:sec:sapl} introduces \Sapl, the intermediate language we wan
 The translation scheme of \Sapl to \JS is presented in Section \ref{sapljs:sec:sapljs}.
 A number of benchmark tests for this implementation are presented in Section \ref{sapljs:sec:benchmarks}.
 In Section \ref{sapljs:sec:optimizations} we propose a number of candidate optimizations that will be implemented in the near future.
-We end with conclusion and look forward to future work in Section \ref{sapljs:sec:conclusions}.
+We end with conclusions and look forward to future work in Section \ref{sapljs:sec:conclusions}.
 
 %The representations that are the result of this translation rely on the use of an evaluator function eval to implement non-strict semantics.
 %The eval function is used to reduce thunks (closures) on the moment they are needed. Using the dynamic compilation features of \JavaScript closures are turned into \JavaScript expressions that can be further executed.

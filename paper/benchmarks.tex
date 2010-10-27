@@ -3,7 +3,7 @@ In this section we present the results of several benchmark tests for the  \Java
 comparison with the \Java Applet implementation of \Sapl. 
 We ran the benchmarks on a MacBook 2.26 MHz Core 2 Duo machine running MacOS X10.6.4.
 We used Google Chrome using the V8 \JavaScript engine to run the programs.
-At this moment V8 offers by far the fastest platform for running \Sapljs programs.
+At this moment V8 offers the fastest platform for running \Sapljs programs.
 However, there is a heavy competition on \JavaScript engines and they tend to become much faster.
 The benchmark programs we used for the comparison are the same as the benchmarks  we used for comparing 
 \Sapl with other interpreters and compilers in \cite{JKP}. In that comparison it turned out that \Sapl is at least twice as fast (and often even faster)
@@ -11,28 +11,28 @@ as other interpreters like \textsf{Helium}, \textsf{Amanda}, \textsf{GHCi} and \
 Here we used the \Java Applet version for the comparison. This version is about 40\% slower than the \C  version
 of the interpreter described in \cite{JKP} (varying from 25 to 50\% between benchmarks), but is still faster than the other interpreters mentioned above.
 The \Java Applet and \JavaScript  version of  \Sapl  and all benchmark code can be found at \cite{SAPL}.
-We briefly repeat the description of the benchmark programs here.
+We briefly repeat the description of the benchmark programs here:
 
 \begin{enumerate}
 %\setlength{\itemsep}{0mm}
-\item {\bf Prime Sieve} The prime number sieve program, calculating the 2000th
+\item {\bf \textsf{Prime Sieve}} The prime number sieve program, calculating the 2000th
 prime number.
-\item {\bf Symbolic Primes} Symbolic prime number sieve using Peano numbers,
+\item {\bf \textsf{Symbolic Primes}} Symbolic prime number sieve using Peano numbers,
 calculating the 160th prime number.
-\item {\bf Interpreter} A small \Sapl  interpreter. As an example we coded the prime
+\item {\bf \textsf{Interpreter}} A small \Sapl  interpreter. As an example we coded the prime
 number sieve for this interpreter and calculated the 30th prime number.
-\item {\bf Fibonacci} The (naive) Fibonacci function, calculating {\em fib 35}.
-\item {\bf Match} Nested pattern matching (5 levels deep) repeated 160000 times.
-\item {\bf Hamming} The generation of the list of Hamming numbers (a cyclic
+\item { \textsf{Fibonacci}} The (naive) Fibonacci function, calculating \texttt{fib 35}.
+\item {\bf \textsf{Match}} Nested pattern matching (5 levels deep) repeated 160000 times.
+\item {\bf \textsf{Hamming}} The generation of the list of Hamming numbers (a cyclic
 definition) and taking the 1000th Hamming number, repeated 1000 times.
-\item {\bf Sorting} Tree Sort (3000 elements), Insertion Sort (3000 elements), Quick Sort (3000 elements), Quick Sort (3000 elements) Merge
-Sort (10000 elements, merge sort is much faster, we therefore use a much larger example)
-\item {\bf Queens} Number of placements of 11 Queens on a 11 * 11 chess board.
-\item {\bf Knights} Finding a Knights tour on a 5 * 5 chess board.
-\item {\bf Prolog} A small Prolog interpreter based on unification only (no
+\item {\bf \textsf{Sorting}} Tree Sort (3000 elements), Insertion Sort (3000 elements), Quick Sort (3000 elements), 
+Merge Sort (10000 elements, merge sort is much faster, we therefore use a much larger example)
+\item {\bf \textsf{Queens}} Number of placements of 11 Queens on a 11 * 11 chess board.
+\item {\bf \textsf{Knights}} Finding a Knights tour on a 5 * 5 chess board.
+\item {\bf \textsf{Prolog}} A small Prolog interpreter based on unification only (no
 arithmetic operations), calculating ancestors in a four generation family tree,
 repeated 100 times.
-\item {\bf Parser Combinators} A parser for Prolog programs based on Parser
+\item {\bf \textsf{Parser Combinators}} A parser for Prolog programs based on Parser
 Combinators parsing a 3500 lines Prolog program.
 \end{enumerate}
 %
@@ -40,13 +40,12 @@ For sorting a list of size $n$ a source list is  used consisting of numbers $1$
 to $n$. The elements that are 0 modulo 10 are put before those that are 1 modulo
 $10$, etc.
 
-%We could no use all of the previous used b 
 The benchmarks cover a wide range of aspects of functional programming (lists, laziness, 
 deep recursion, higher order functions, cyclic definitions, pattern matching, 
 heavy calculations, heavy memory usage).
 All times are machine measured. The programs where chosen in such a way that
 they ran for at least a second or longer, if possible. This to eliminate start-up 
-effects and to give the JIT compiler enough time to do its work. 
+effects and to give the \textsf{JIT} compiler enough time to do its work. 
 In many cases the output was converted to a single number (e.g. 
 by summing the elements of a list) to eliminate the influence of slow output 
 routines.
@@ -54,13 +53,13 @@ routines.
 \subsection{Benchmark Tests}
 We ran the tests for the following versions of \Sapl: 
 \begin{itemize}
-\item{\Sapl} The \Java Applet version of \Sapl;
-\item{\Sapljs} The \Sapljs version including the normal form optimizations and the inlining of arithmetic operations. 
-\item{\Sapljs nopt} The version not using these optimizations.
+\item{\Sapl}: the \Java Applet version of \Sapl;
+\item{\Sapljs}: the \Sapljs version including the normal form optimizations and the inlining of arithmetic operations;
+\item{\textsf{Sapljs nopt}}: the version not using these optimizations.
 \end{itemize}
-We also  included the estimated percentage of time spend on memory management for the \Sapljs version.
+We also  included the estimated percentage of time spent on memory management for the \Sapljs version.
+The results can be found in Table \ref{sapljs:table}.
 \input{figTests}
-%\input{memTests}
 
 \subsection{Evaluation of the Benchmark tests}
 Before analysing the results we first make some general remarks about the performance of \Java, \JS and the \Sapl interpreter which are relevant for
@@ -78,7 +77,7 @@ It supports a standard (not user modifiable) stack of only 30k at this moment.
 This is certainly enough for most \JS programs, but not for a number of our benchmarks that can be deeply recursive. 
 %Also forced \textsf{eval} calls can become deeply recursive. 
 This limited the size of the runs of the following benchmarks: interpreter, all sorting benchmarks, and the prolog and parse benchmark. 
-Another benchmark we used previously: \textsf{twice twice twice twice inc 0}, could not be run at all.
+Another benchmark we used previously: \texttt{twice twice twice twice inc 0}, could not be run at all.
 
 For a lazy functional language the creation of chunks and the re-collection of them later on, often takes a substantial part of program run-times.
 It is therefore important to do some special tests that say something the speed of memory (de-)allocation.
@@ -86,13 +85,13 @@ The \Sapl interpreter uses a dedicated memory management unit (see \cite{JKP}) n
 The better performance of the \Sapl interpreter in comparison with the other interpreters partly depends on its fast memory management.
 For the \JS implementation we rely on  the memory management of \JS itself.
 We did some dedicated tests that showed that memory allocation for the \Java\ \Sapl interpreter is about 4-6 times as fast as for the \JS implementation.
-Therefore, we included an estimation of the percentage of time spend on memory management for all benchmarks running using  the \Sapljs interpreter.
+Therefore, we included an estimation of the percentage of time spent on memory management for all benchmarks ran on  the \Sapljs interpreter.
 
 \subsubsection{Results}
-The following benchmarks run faster on \Sapljs than on the \Sapl interpreter or at comparable speed: Symbolic Primes, Fibonacci, Interpreter and Knights. These benchmarks all benefit considerably from the optimizations, with Fibonacci as the most exceptional case (40 times faster).
-Note that in the optimized version of Fibonacci no time is spent on memory management.
+The following benchmarks run faster on \Sapljs than on the \Sapl interpreter or at comparable speed: \textsf{Symbolic Primes}, \textsf{Fibonacci}, \textsf{Interpreter} and \textsf{Knights}. These benchmarks all benefit considerably from the optimizations, with \textsf{Fibonacci} as the most exceptional case (40 times faster).
+Note that in the optimized version of \textsf{Fibonacci} no time is spent on memory management.
 
-The worst performing benchmark (5 times slower) is Parser Combinators. 
+The worst performing benchmark (almost 5 times slower) is \textsf{Parser Combinators}. 
 This benchmarks profits only modestly  from the optimizations and spends relatively much time 
 in memory management operations. Is is also an atypical benchmark in the sense that almost all functions are higher order, which will not be the case for
 typical functional programs. Note, that for the original \Sapl interpreter this is one of the best benchmarks (see \cite{JKP}), 

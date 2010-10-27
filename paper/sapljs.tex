@@ -2,34 +2,33 @@
 In Section \ref{sapljs:sec:motivation} we already motivated our choice for \JS as an implementation platform for \Sapl.
 Of course, it is possible to build a \Sapl interpreter in \JS in an equivalent way to that of the \Java version (or by using the Google Web Toolkit).
 But \JS offers a number of features that make it possible to do it in another and better way.
-First, it is possible to add \JS code to a running \JS program on-the-fly by using the \textsf{eval} function.
+First, it is possible to add \JS code to a running \JS program on-the-fly.
 Second, it is possible to build function calls to \JS functions dynamically by supplying a function name and an array of arguments.
 Third, \JS has no static type check. Normally we consider this to be a serious drawback, but here we can use this to build heterogeneous arrays,
 containing elements of different types.
-
 Therefore, we have chosen to build a compiler that translates \Sapl code to \JS and that exploits the above mentioned possibilities.
 
 In the original \Sapl interpreter constructors are implemented as functions.
-The \textsf{select} construct is used to optimize case selection based on constructors,
-but it is also possible to use constructors as functions that select the right case themselves.
+The \textsf{select} construct is used to optimize case selection based on constructors.
+But it is also possible to use constructors as functions that select the right case themselves.
 In the translation to \JS it turned out that it is more efficient to represent constructors in 
 a different way and it is therefore not possible to use constructors as functions for selecting a case. 
-%Therefore, we will use the more traditional 
+Therefore, the \texttt{select} keyword is now obligatory when doing a case analysis on a algebraic data type.
 
 For the following \Sapl constructs we must define how they are translated to \JS:
 \begin{itemize}
 	\item function definitions;
 	\item constructor definitions;
-	\item function applications and chunks;
+	\item expressions;
 	\item let constructs;
 	\item select constructs;
 	\item if constructs;
 	\item primitive values like: integer, real, boolean and string, but also variable and function names;
-	\item built-in functions like add, eq, etc.
+	\item built-in functions like \texttt{add}, \texttt{eq}, etc.
 \end{itemize}
 
 \subsubsection{Function definitions} 
-In our translation scheme we map a \Sapl function onto a \JS function with the same name and same arity:
+In our translation scheme we map a \Sapl function onto a \JS function with the same name and arity:
 \begin{CleanCode}
 f a1 .. an = body
 \end{CleanCode}
@@ -53,8 +52,8 @@ Here \texttt{k} is a positive integer corresponding to the position of the const
 the original type definition. The name of the constructor \texttt{`Ck'} is put into the result for printing purposes.
 
 
-\subsubsection{Function applications and chunks} 
-A chunk is a function application if the first argument is a function.
+\subsubsection{Expressions} 
+In \Sapl an expression is always an application. It is a function application if the first argument is a function.
 An application or chunk is replaced by an array:
 \begin{CleanCode}
 a0 a1 .. an 
@@ -89,7 +88,7 @@ In \texttt{texpr\_with\_a}, \texttt{a} should be replaced by:
 \begin{CleanCode}
 function() {return a;}
 \end{CleanCode}
-This construction works because \JS remembers within an in-line function its context (all what is on the stack).
+This construction works because \JS remembers within an in-line function (closure) its context (all what is on the stack).
 
 \subsubsection{\textsf{select} constructs} 
 A \texttt{select} is transformed to a \texttt{switch} statement:
@@ -101,8 +100,8 @@ is transformed to:
 var _ys = Sapl.eval(a);
 switch(_ys[0]) {
 	case 0: var a0 = _ys[1][1],..,  an = _ys[1][n+1];
-				  tbs;
-		      break;
+	        tbs;
+            break;
 	..
 }
 \end{CleanCode}
@@ -177,36 +176,38 @@ that the structure of the original functions is preserved in the translation.
 
 \subsubsection{The \texttt{eval} function}
 The generated \JS functions cannot be executed directly, because they contain unevaluated chunks.
-The \textsf{eval} function is used to evaluate these chunks (turn them into head-normal-form)
+The \textsf{eval} function is used to evaluate these chunks (turn them into head-normal-form).
 \textsf{eval} must do a case analysis on the expression it is offered.
-It's action depends on the type of the this expression:
+It's action depends on the type of  this expression:
 
 \begin{itemize}
 \item Primitive values (int, real, boolean, string) are immediately returned. They are already in normal form.
 \item Constructor arrays  are also immediately returned. They are already in normal form too.
-\item A chunks \texttt{[f,[as]]} is turned into a function call \texttt{f(as)}.
-The result of this call must be written back in the original array, because there may be more than
-one reference to the same array (sharing). In \JS an array re-size operation does not change it's location.  
+\item A chunk \texttt{[f,[as]]} is turned into a function call \texttt{f(as)}.
+The result of this call must be written back into the original array, because there may be more than
+one reference to the same array because of sharing. 
 \texttt{eval} is applied recursively to the result.
+In case the result is a primitive value the array must be resized to length 1.
+This array re-size operation does not change the location of the array.  
 Of course, the call is only made if there are enough arguments. 
 If there are too few arguments the chunk itself is returned (it is in normal form already)
 If there are too many arguments, a new chunk
 is build using the result of the call and the remainder of the arguments.
 Also here \texttt{eval} is applied to the result. 
 \item Boxed values \texttt{[v]} are un-boxed (v is returned, only primitive values can be boxed).
-\item Curried applications \texttt{[[a,[as]],[bs]]} are turned into  \texttt{[a,[as++bs]]}.
+\item Curried applications \texttt{[[a,[as]],[bs]]} are turned into  \texttt{[a,[as++bs]]}, and
 \texttt{eval} is applied recursively to the result.
 \end{itemize}
 
 \subsection{Normal Forms}
 Above we described a straightforward compilation scheme from \Sapl to \JS, 
-where function calls (chunks) are transformed to arrays.
+where expressions (chunks) are transformed to arrays.
 %The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 
 %and thereby forcing the evaluation of there arguments. 
 %In this way we may impose unwanted eager sub-expressions into a program. 
 %If a programmer does not want this he or she should use an indirection via an own-made auxiliary function.
-The \texttt{eval} function is used to turn a chunk into a real \JS function call and reduces a chunk to head-normal-form.
-The \texttt{eval} function has to do a case analysis on the structure of the chunk expression.
+The \texttt{eval} function is used to turn a chunk into a \JS expression and to reduce it to head-normal-form.
+%The \texttt{eval} function has to do a case analysis on the structure of the chunk expression.
 For a function application  we measured that a direct \JS call is more than 10 times faster 
 than making the same call using the 
 \texttt{eval} function on the chunk representing the call. This overhead is significant. 
@@ -244,7 +245,7 @@ function sum(as){
 	}
 }
 \end{CleanCode}
-In Section \ref{sapljs:sec:benchmarks} we show that these optimizations can result in 
+In Section \ref{sapljs:sec:benchmarks} we show that these optimizations often result in 
 a significant speed-up.
 
 %\textit{<<start of Eddy's part>>\\
