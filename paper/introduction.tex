@@ -4,7 +4,7 @@ subject. Non-strict purely functional languages such as \Haskell and \Clean have
 many interesting properties, but their use in client-side processing has been
 limited so far. This is at least partly due to the lack of browser support for
 these languages. Therefore, the availability of  an implementation for
-non-strict functional languages in the browser has the potential to
+non-strict purely functional languages in the browser has the potential to
 significantly improve the applicability of these languages in this area.
 
 Several implementations of non-strict purely functional languages in the browser
@@ -57,12 +57,11 @@ interpreter itself and that of other interpreters. Summarizing, we obtained the
 following results:
 
 \begin{itemize}
-\item We realized an implementation of the non-strict functional programming
-      language \Clean in the browser, via the intermediate language \Sapl, that
-      does not require the installation of a plug-in.
+\item We realized an implementation of the non-strict purely functional
+      programming language \Clean in the browser, via the intermediate language       \Sapl, that does not require the installation of a plug-in.
 \item This performance of this implementation is competitive with that of the
-      \Sapl interpreter and that of other interpreters for non-strict functional
-      languages.
+      \Sapl interpreter and that of other interpreters for non-strict purely
+      functional languages.
 \item The underlying translation scheme is straightforward, constituting a
       one-to-one mapping of \Sapl onto \JS expressions.
 \item The implementation of the compiler is based on the representation of
