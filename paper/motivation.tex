@@ -8,46 +8,47 @@ languages such as \textsf{C++}, \Java, and \textsf{PHP} dominate the scene.
 On the client-side, the use of \JS is the most obvious choice, due to the fact
 that a \JS interpreter is shipped with every major browser. As an additional
 advantage, browsers that support \JS usually also expose their \textsf{HTML}
-\textsf{DOM} through a \JS API, allowing for the association of \JS functions to
+\textsf{DOM} through a \JS API. This allows for the association of \JS functions to
 \textsf{HTML} elements through the use of event listeners, and the use of \JS
-functions to manipulate these same elements. This not withstanding, the use of
+functions to manipulate these same elements. This notwithstanding, the use of
 multiple formalisms complicates the development of Internet applications
-considerably, due to the the close collaboration required between the client and
+considerably, due to the close collaboration required between the client and
 server parts of most web applications.
 
-Several attempts have been made to overcome the above problem. As an example we
-present the Google Web Toolkit (\textsf{GWT}). Using the GWT, server and client
+Several attempts have been made to overcome the above problem. An example of them
+is the Google Web Toolkit (\textsf{GWT}). Using the GWT, server and client
 code can be generated from the same \Java code base. This is accomplished
 by translating the client part of the application to \JS, using special
 libraries to ensure that client and server collaborate in the right way.
 
 Another approach, based on the use of a non-strict purely functional programming
 language, is the \iTask system \cite{ITASK}. \iTask is a combinator library
-that is written in \Clean, and used for the realization of web-based dynamic
-workflow systems \cite{LDTA2010}. An \iTask application consists of a structured
+that is written in \Clean, and is used for the realization of web-based dynamic
+workflow systems.% \cite{LDTA2010}. 
+An \iTask application consists of a structured
 collection of tasks to be performed by users, computers or both. \iTask
 specifications allow the flow of control and information between tasks to be
 expressed. 
 
 To enhance the performance of \iTask applications, the possibility to handle
-tasks on the client was added in \cite{ITASK_AJAX}, accomplished by the
-addition of a simple \textsf{OnClient} annotation to a task. When this
+tasks on the client was added \cite{ITASK_AJAX}, accomplished by the
+addition of a simple \texttt{OnClient} annotation to a task. When this
 annotation is present, the \iTask runtime automatically takes care of all
-communication between the client and server parts of the task. The client part
-of the task is executed by the \Sapl interpreter, which is available as a \Java 
-applet on the client.
+communication between the client and server parts of the application. 
+The client part is executed by the \Sapl interpreter, 
+which is available as a \Java applet on the client.
 
 \subsection{Why switch to \JS?}
 Until now we used the \Java Applet implementation of the \Sapl interpreter to
 run \Clean programs on the client side of web applications. However, this
 approach has several drawbacks. First of all, the use of \Java Applets requires
-that the \Java Virtual Machine (JVM) be installed, which is often infeasible in
+the \Java Virtual Machine (\textsf{JVM}) to be installed, which is often infeasible in
 environments where the user has no control over the configuration of his/her
-system. Secondly, the JVM exhibits significant latency during start-up. And
-third, the JVM might not even be available on certain platforms (on mobile
+system. Secondly, the \textsf{JVM} exhibits significant latency during start-up. And
+third, the \textsf{JVM} might not even be available on certain platforms (on mobile
 devices in particular).
 
-In contrast to the JVM, a \JavaScript virtual machine is shipped with all major 
+In contrast to the \textsf{JVM}, a \JavaScript virtual machine is shipped with all major 
 browsers for most major platforms (including mobile devices). Over the past few
 years client-side processing has become more and more important, and as a result
 much effort is spent on improving the speed of these \JS interpreters. One
@@ -59,7 +60,7 @@ in speed have made \JS an interesting alternative for the implementation of the
 
 \subsection{Co-operation between the Server and Client}
 A special feature of the \Sapl interpreter is that we can use a dedicated form
-of \textsf{Clean} dynamics \cite{DYNAMICS} for it. This allows \Clean (e.g.
+of \textsf{Clean} dynamics \cite{DYNAMICS} for it. This allows \Clean expressions (e.g.
 partial function applications) to be serialized to strings. These strings can
 can subsequently be stored somewhere, and at a later moment be retrieved,
 deserialized and executed.

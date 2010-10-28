@@ -10,7 +10,7 @@ significantly improve the applicability of these languages in this area.
 Several implementations of non-strict purely functional languages in the browser
 already exist. However, these implementations are either based on the use of a
 \Java Applet (e.g. for \Sapl, a client-side platform for \Clean
-\cite{JKP, PJKA}) or a dedicated plug-in (e.g. for \textsf{HaskellScript} 
+\cite{JKP,PJKA}) or a dedicated plug-in (e.g. for \textsf{HaskellScript} 
 \cite{HaskellScript} a \Haskell-like functional language). Both these solutions
 require the installation of a plug-in, which is often infeasible in environments
 where the user has no control over the configuration of his/her system.
@@ -25,7 +25,7 @@ Google Chrome browser, offer performance that often rivals that of \Java.
 
 \JavaScript has been used as the target language for the implementation of
 other functional languages in the browser such as HOP and LINKS
-\cite{HOP1, HOP2, LINKS1}. However, contrary to \Haskell and \Clean, these are
+\cite{HOP1,HOP2,LINKS1}. However, contrary to \Haskell and \Clean, these are
 strict functional languages, which simplifies their translation to \JavaScript
 considerably.
 
@@ -42,11 +42,11 @@ implementation of the non-strict purely functional language \Sapl in
 
 We implemented a compiler that translates \Sapl to \JS expressions. Its
 implementation is based on the representation of unevaluated expressions
-(thunks) as \JS arrays and the just-in-time evaluation of these thunks by a
-dedicated \texttt{eval} function (it should be noted that this \texttt{eval}
-function is different from the one that is provided by \JS itself).
+(thunks) as \JS arrays, and the just-in-time evaluation of these thunks by a
+dedicated \texttt{eval} function (not the \texttt{eval}
+function provided by \JS itself).
 
-We will present the translation scheme used by our compiler in two steps.
+We present the translation scheme used by our compiler in two steps.
 In step one, we describe a straightforward translation of \Sapl to \JS
 expressions. In step two, we add several optimizations to the translation
 scheme described in step one. Among these are the inlining of arithmetic
@@ -58,7 +58,8 @@ following results:
 
 \begin{itemize}
 \item We realized an implementation of the non-strict purely functional
-      programming language \Clean in the browser, via the intermediate language       \Sapl, that does not require the installation of a plug-in.
+      programming language \Clean in the browser, via the intermediate language       
+      \Sapl, that does not require the installation of a plug-in.
 \item This performance of this implementation is competitive with that of the
       \Sapl interpreter and that of other interpreters for non-strict purely
       functional languages.
@@ -78,8 +79,8 @@ implement in \JS. The translation scheme underlying this implementation is
 presented in section \ref{sapljs:sec:sapljs}. Secton \ref{sapljs:sec:benchmarks}
 presents a number of benchmark tests for the implementation. A number of
 potential optimizations, to be implemented in the near future, is presented in
-section \ref{sapljs:sec:optimizations}. Section \ref{sapljs:sec:relatedwork}
-compares our approach with those used in earlier works. Finally, we end with our
+section \ref{sapljs:sec:optimizations}. Section \ref{sapljs:sec:related}
+compares our approach with that of others. Finally, we end with our
 conclusions and a summary of planned future work in section
 \ref{sapljs:sec:conclusions}.
 

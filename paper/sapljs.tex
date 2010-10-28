@@ -54,7 +54,7 @@ the original type definition. The name of the constructor \texttt{`Ck'} is put i
 
 \subsubsection{Expressions} 
 In \Sapl an expression is always an application. It is a function application if the first argument is a function.
-An application or chunk is replaced by an array:
+An application or thunk is replaced by an array:
 \begin{CleanCode}
 a0 a1 .. an 
 \end{CleanCode}
@@ -63,7 +63,7 @@ is transformed to:
 [ta0,[ta1,..,tan]]
 \end{CleanCode}
 Again, \texttt{tai} is the transformation of \texttt{ai}.
-We cannot replace a function application: \texttt{f a1 .. an} by: \texttt{f(a1,..,an)} because we would obtain
+We cannot replace a function application: \texttt{f a1 .. an} by: \texttt{f(a1,..,an)} because we may introduce
 an unwanted  eager semantics in this way!
 
 \subsubsection{\textsf{let} constructs} 
@@ -82,7 +82,7 @@ let a = expr_with_a in c
 \end{CleanCode}
 is transformed to:
 \begin{CleanCode}
-var a = texpr_with_a in tc
+var a = texpr_with_a; tc
 \end{CleanCode}
 In \texttt{texpr\_with\_a}, \texttt{a} should be replaced by: 
 \begin{CleanCode}
@@ -97,7 +97,7 @@ select a (\a0..an = bs) ..
 \end{CleanCode}
 is transformed to:
 \begin{CleanCode}
-var _ys = Sapl.eval(a);
+var _ys = Sapl.eval(ta);
 switch(_ys[0]) {
 	case 0: var a0 = _ys[1][1],..,  an = _ys[1][n+1];
 	        tbs;
@@ -175,23 +175,23 @@ The examples show that the transformation is straightforward and
 that the structure of the original functions is preserved in the translation.
 
 \subsubsection{The \texttt{eval} function}
-The generated \JS functions cannot be executed directly, because they contain unevaluated chunks.
-The \textsf{eval} function is used to evaluate these chunks (turn them into head-normal-form).
+The generated \JS functions cannot be executed directly, because they contain unevaluated thunks.
+The \textsf{eval} function is used to evaluate these thunks (turn them into head-normal-form).
 \textsf{eval} must do a case analysis on the expression it is offered.
 It's action depends on the type of  this expression:
 
 \begin{itemize}
 \item Primitive values (int, real, boolean, string) are immediately returned. They are already in normal form.
 \item Constructor arrays  are also immediately returned. They are already in normal form too.
-\item A chunk \texttt{[f,[as]]} is turned into a function call \texttt{f(as)}.
+\item A thunk \texttt{[f,[as]]} is turned into a function call \texttt{f(as)}.
 The result of this call must be written back into the original array, because there may be more than
 one reference to the same array because of sharing. 
 \texttt{eval} is applied recursively to the result.
 In case the result is a primitive value the array must be resized to length 1.
-This array re-size operation does not change the location of the array.  
+In \JS an array re-size operation does not change the location of the array.  
 Of course, the call is only made if there are enough arguments. 
-If there are too few arguments the chunk itself is returned (it is in normal form already)
-If there are too many arguments, a new chunk
+If there are too few arguments the thunk itself is returned (it is in normal form already).
+If there are too many arguments, a new thunk
 is build using the result of the call and the remainder of the arguments.
 Also here \texttt{eval} is applied to the result. 
 \item Boxed values \texttt{[v]} are un-boxed (v is returned, only primitive values can be boxed).
@@ -201,17 +201,17 @@ Also here \texttt{eval} is applied to the result.
 
 \subsection{Normal Forms}
 Above we described a straightforward compilation scheme from \Sapl to \JS, 
-where expressions (chunks) are transformed to arrays.
+where expressions (thunks) are transformed to arrays.
 %The only optimization we already made is replacing arithmetic expressions directly by there \JS counterparts 
 %and thereby forcing the evaluation of there arguments. 
 %In this way we may impose unwanted eager sub-expressions into a program. 
 %If a programmer does not want this he or she should use an indirection via an own-made auxiliary function.
-The \texttt{eval} function is used to turn a chunk into a \JS expression and to reduce it to head-normal-form.
-%The \texttt{eval} function has to do a case analysis on the structure of the chunk expression.
+The \texttt{eval} function is used to turn a thunk into a \JS expression and to reduce it to head-normal-form.
+%The \texttt{eval} function has to do a case analysis on the structure of the thunk expression.
 For a function application  we measured that a direct \JS call is more than 10 times faster 
 than making the same call using the 
-\texttt{eval} function on the chunk representing the call. This overhead is significant. 
-Fortunately, in many cases we can do an analysis at compile time and replace a call to \texttt{eval} for a chunk by the corresponding hard coded \JS.
+\texttt{eval} function on the thunk representing the call. This overhead is significant. 
+Fortunately, in many cases we can do an analysis at compile time and replace a call to \texttt{eval} for a thunk by the corresponding hard coded \JS.
 This transformation replaces:
 \begin{CleanCode}
 Sapl.eval([f,[a1,..,an])

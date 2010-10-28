@@ -26,7 +26,7 @@ number sieve for this interpreter and calculated the 30th prime number.
 \item {\bf \textsf{Hamming}} The generation of the list of Hamming numbers (a cyclic
 definition) and taking the 1000th Hamming number, repeated 1000 times.
 \item {\bf \textsf{Sorting}} Tree Sort (3000 elements), Insertion Sort (3000 elements), Quick Sort (3000 elements), 
-Merge Sort (10000 elements, merge sort is much faster, we therefore use a much larger example)
+Merge Sort (10000 elements, merge sort is much faster, we therefore use a larger example)
 \item {\bf \textsf{Queens}} Number of placements of 11 Queens on a 11 * 11 chess board.
 \item {\bf \textsf{Knights}} Finding a Knights tour on a 5 * 5 chess board.
 \item {\bf \textsf{Prolog}} A small Prolog interpreter based on unification only (no
@@ -60,10 +60,11 @@ We ran the tests for the following versions of \Sapl:
 We also  included the estimated percentage of time spent on memory management for the \Sapljs version.
 The results can be found in Table \ref{sapljs:table}.
 \input{figTests}
+%\vspace{-1cm}
 
 \subsection{Evaluation of the Benchmark tests}
 Before analysing the results we first make some general remarks about the performance of \Java, \JS and the \Sapl interpreter which are relevant for
-a better understanding of the results. In general it is difficult to give absolute figures when comparing the speed of language implementations. 
+a better understanding of the results. In general it is difficult to give absolute figures when comparing the speeds of language implementations. 
 They often also depend on the platform (processor), the operating system running on it and the particular benchmarks used to compare. 
 Therefore, all numbers given should be interpreted as global indications. 
 
@@ -76,10 +77,10 @@ We could not run all benchmarks as long as we wished because of stack limitation
 It supports a standard (not user modifiable) stack of only 30k at this moment.
 This is certainly enough for most \JS programs, but not for a number of our benchmarks that can be deeply recursive. 
 %Also forced \textsf{eval} calls can become deeply recursive. 
-This limited the size of the runs of the following benchmarks: interpreter, all sorting benchmarks, and the prolog and parse benchmark. 
+This limited the size of the runs of the following benchmarks: \textsf{Interpreter}, all sorting benchmarks, and the \textsf{Prolog} and \textsf{Parser Combinator} benchmark. 
 Another benchmark we used previously: \texttt{twice twice twice twice inc 0}, could not be run at all.
 
-For a lazy functional language the creation of chunks and the re-collection of them later on, often takes a substantial part of program run-times.
+For a lazy functional language the creation of thunks and the re-collection of them later on, often takes a substantial part of program run-times.
 It is therefore important to do some special tests that say something the speed of memory (de-)allocation.
 The \Sapl interpreter uses a dedicated memory management unit (see \cite{JKP}) not depending on \Java memory management. 
 The better performance of the \Sapl interpreter in comparison with the other interpreters partly depends on its fast memory management.
@@ -109,8 +110,8 @@ For many \Sapljs examples a substantial part of their run-time is spent on memor
 They can only run significantly faster after a more efficient memory management is realized.
 It is tempting to implement a memory management similar to that of the \Sapl interpreter. 
 But this memory management relies heavily on representing graphs by binary trees, 
-which does not fit with our model for turning chunks into \JS function calls which depends heavily on using arrays to
-represent chunks.
+which does not fit with our model for turning thunks into \JS function calls which depends heavily on using arrays to
+represent thunks.
 
 %We may conclude that memory management take a considerably percentage of execution time for the \Sapljs programs than for
 %the \Sapl interpreter. This explains why a number of the benchmarks execute slower than for the \Sapl interpreter, despite the fact
