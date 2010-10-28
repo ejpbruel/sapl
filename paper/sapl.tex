@@ -1,9 +1,9 @@
 \section{The \Sapl Programming Language and Interpreter}
 \label{sapljs:sec:sapl}
 \Sapl stands for \textbf{S}imple \textbf{A}pplication \textbf{P}rogramming
-\textbf{L}anguage. The basic version of \Sapl provides no special constructs for
-algebraic data types. Instead, they are encoded as ordinary functions.  Details 
-on this encoding and its consequences can be found in \cite{JKP}.
+\textbf{L}anguage. The original version of \Sapl provides no special constructs 
+for algebraic data types. Instead, they are represented as ordinary functions.
+Details on this encoding and its consequences can be found in \cite{JKP}.
 Here we restrict ourselves to giving a few examples to show how it is realized.
 
 We start with the encoding of the list data type, together with the \texttt{sum} function:
@@ -13,8 +13,8 @@ Cons x xs f1  f2 = f2 x xs
 sum          xxs = select xxs 0 (\x xs = x + sum xs)
 \end{CleanCode}
 
-The \texttt{select} keyword acts as a hint to the compiler that \texttt{xxs} is 
-a constructor, which allows the generation of more efficient code (again see
+The \texttt{select} keyword is used as a hint to the compiler that \texttt{xxs} 
+is a constructor, which allows the generation of more efficient code (again see
 \cite{JKP} for the details). Semantically, \texttt{select} acts as the identity
 function. The remaining arguments are functions that act on the arguments of a
 constructor (analog to clauses in a case-statement).

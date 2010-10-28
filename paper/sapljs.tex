@@ -1,180 +1,194 @@
-\section{A \JS based implementation for  \Sapl}\label{sapljs:sec:sapljs}
-In Section \ref{sapljs:sec:motivation} we already motivated our choice for \JS as an implementation platform for \Sapl.
-Of course, it is possible to build a \Sapl interpreter in \JS in an equivalent way to that of the \Java version (or by using the Google Web Toolkit).
-But \JS offers a number of features that make it possible to do it in another and better way.
-First, it is possible to add \JS code to a running \JS program on-the-fly.
-Second, it is possible to build function calls to \JS functions dynamically by supplying a function name and an array of arguments.
-Third, \JS has no static type check. Normally we consider this to be a serious drawback, but here we can use this to build heterogeneous arrays,
-containing elements of different types.
-Therefore, we have chosen to build a compiler that translates \Sapl code to \JS and that exploits the above mentioned possibilities.
+\section{A \JS based implementation for  \Sapl}
+\label{sapljs:sec:sapljs}
+Section \ref{sapljs:sec:motivation} motivated our choice for implementing the
+\Sapl interpreter in the browser using \JS. Compared to \Java, this language 
+provides several features that offer opportunities for a more efficient 
+implementation. First of all, the fact that \JS is a \emph{dynamic} language allows both functions and function calls to be generated at run-time, using the 
+built-in functions \texttt{eval} and \texttt{apply}, respectively. Second, the 
+fact that \JS is a dynamically \emph{typed} language allows the creation of 
+heterogeneous arrays. Therefore, rather than building an interpreter, we have 
+chosen to build a compiler/interpreter hybrid that exploits the features 
+mentioned above.
 
-In the original \Sapl interpreter constructors are implemented as functions.
-The \textsf{select} construct is used to optimize case selection based on constructors.
-But it is also possible to use constructors as functions that select the right case themselves.
-In the translation to \JS it turned out that it is more efficient to represent constructors in 
-a different way and it is therefore not possible to use constructors as functions for selecting a case. 
-Therefore, the \texttt{select} keyword is now obligatory when doing a case analysis on a algebraic data type.
+As mentioned in section \ref{sapljs:sec:sapl}, the original \Sapl interpreter 
+provides no special constructs for algebraic data types. The \texttt{select}
+keyword is used as a hint to the compiler that allows constructor based case selection to be optimized, but it is also possible to represent constructors 
+as functions that act as case selectors themselves. As it turns out, the
+translation to \JS can be made more efficient by representing constructors in a
+special way. Therefore, it is no longer possible to represent constructors as ordinary functions, and special constructs for constructors have been added to
+the language. Furthermore, the \texttt{select} keyword is now obligatory when doing constructor based case analysis.
 
-For the following \Sapl constructs we must define how they are translated to \JS:
+For the following \Sapl constructs we must describe how they are translated to 
+\JS:
 \begin{itemize}
+	\item constants, such as booleans, integers, real numbers, and strings;
+    \item identifiers, such as variable and function names;
+    \item let constructs;
 	\item function definitions;
+	\item function applications;
 	\item constructor definitions;
-	\item expressions;
-	\item let constructs;
-	\item select constructs;
-	\item if constructs;
-	\item primitive values like: integer, real, boolean and string, but also variable and function names;
-	\item built-in functions like \texttt{add}, \texttt{eq}, etc.
+	\item select statements;
+	\item if statements;
+	\item built-in functions, such as \texttt{add}, \texttt{eq}, etc.
 \end{itemize}
 
+\subsubsection{Constants}
+Constants do not have to be transformed. They have the same representation in
+\Sapl and \JS.
+
+\subsubsection{Identifiers}
+Identifiers in \Sapl and \JS share the same namespace. Therefore, identifiers do
+not have to be transformed either.
+
+\subsubsection{\textsf{Let} constructs} 
+\texttt{Let} constructs are translated differently depending on whether they
+are cyclic or not. Non-cyclic lets in \Sapl can be translated to \texttt{var}
+declarations in \JS, as follows: 
+\begin{CleanCode}
+let x = b in e
+\end{CleanCode}
+is translated to:
+\begin{CleanCode}
+var x = tb; te
+\end{CleanCode}
+where \texttt{tb} and \texttt{te} are the result of the translation of 
+\texttt{b} and \texttt{e}, respectively.
+
+Due to \JS's support for closures, cyclic lets can be translated from \Sapl to
+\JS in a straightforward manner. The idea is to take any occurences of 
+\texttt{x} in \texttt{b} and replace them with:
+\begin{CleanCode}
+function () { return b; }
+\end{CleanCode}
+This construction relies on the fact that \JS combines a function with any free
+variables used by that function to form a closure.
+
 \subsubsection{Function definitions} 
-In our translation scheme we map a \Sapl function onto a \JS function with the same name and arity:
+Due to \JS's support for higher-order functions, function definitions can be
+translated from \Sapl to \JS in a straightforward manner:
 \begin{CleanCode}
-f a1 .. an = body
+f x1 ... xn = body
 \end{CleanCode}
-is transformed to:
+is translated to:
 \begin{CleanCode}
-function f(a1,..,an) { tbody }
+function f(x1, ..., xn) { tbody }
 \end{CleanCode}
-Here \texttt{tbody} is the result of the transformation of \texttt{body}.
+where \texttt{tbody} is the result of the translation of \texttt{body}.
+
+\subsubsection{Function applications} 
+Every \Sapl expression is a function application. Due to \JS's non-eager 
+evaluation semantics, function applications cannot be translated from \Sapl to 
+\JS directly. Instead, unevaluated expressions (or \emph{thunks}) in \Sapl are translated to arrays in \JS:
+\begin{CleanCode}
+f x0 .. xn 
+\end{CleanCode}
+is translated to:
+\begin{CleanCode}
+[tf, [tx0, ..., txn]]
+\end{CleanCode}
+where \texttt{tf} and \texttt{txi} are the result of the translation of 
+\texttt{f} and \texttt{xi}, respectively.
 
 \subsubsection{Constructor definitions} 
-A constructor definition is transformed to a structure that can be used in a \texttt{select} construct to 
-select the right case. A \Sapl type definition containing constructors is translated as follows:
+Constructor definitions in \Sapl are translated to arrays in \JS, in such a way 
+that they can be used in a \texttt{select} construct to select the right case. 
+A \Sapl type definition containing constructors is translated as follows:
 \begin{CleanCode}
-:: typename = .. | Ck a0 .. an | ..
+:: typename = ... | Ck a0 ... an | ...
 \end{CleanCode}
 is transformed to:
 \begin{CleanCode}
-.. function Ck(a0,..,an) {return [k,[`Ck',a0,..,an]];} ..
+... function Ck(x0, ..., xn) { return [k, [`Ck', tx0, ..., txn]]; } ...
 \end{CleanCode}
-Here \texttt{k} is a positive integer corresponding to the position of the constructor in
-the original type definition. The name of the constructor \texttt{`Ck'} is put into the result for printing purposes.
+where \texttt{k} is a positive integer, corresponding to the position of the 
+constructor in the original type definition, and \texttt{txi} is the result of
+the translation of \texttt{xi}. The name of the constructor, \texttt{`Ck'}, is 
+put into the result for debugging purposes.
 
-
-\subsubsection{Expressions} 
-In \Sapl an expression is always an application. It is a function application if the first argument is a function.
-An application or thunk is replaced by an array:
+\subsubsection{\textsf{select} statements} 
+A \texttt{select} statement in \Sapl is translated to a \texttt{switch} 
+statement in \JS, as follows:
 \begin{CleanCode}
-a0 a1 .. an 
+select f (\x0 ... xn = b) ..
 \end{CleanCode}
-is transformed to:
+is translated to:
 \begin{CleanCode}
-[ta0,[ta1,..,tan]]
-\end{CleanCode}
-Again, \texttt{tai} is the transformation of \texttt{ai}.
-We cannot replace a function application: \texttt{f a1 .. an} by: \texttt{f(a1,..,an)} because we may introduce
-an unwanted  eager semantics in this way!
-
-\subsubsection{\textsf{let} constructs} 
-For \texttt{let} constructs we should distinguish between cyclic and non-cyclic uses of \texttt{lets}.
-In case of a non-cyclic \texttt{let}, we can just use a \texttt{var} declaration for the let:
-\begin{CleanCode}
-let a = b in c
-\end{CleanCode}
-is transformed to:
-\begin{CleanCode}
-var a = tb; tc
-\end{CleanCode}
-In case a let is cyclic we make use of an in-line \JS function to mimic a back-pointer (see also examples):
-\begin{CleanCode}
-let a = expr_with_a in c
-\end{CleanCode}
-is transformed to:
-\begin{CleanCode}
-var a = texpr_with_a; tc
-\end{CleanCode}
-In \texttt{texpr\_with\_a}, \texttt{a} should be replaced by: 
-\begin{CleanCode}
-function() {return a;}
-\end{CleanCode}
-This construction works because \JS remembers within an in-line function (closure) its context (all what is on the stack).
-
-\subsubsection{\textsf{select} constructs} 
-A \texttt{select} is transformed to a \texttt{switch} statement:
-\begin{CleanCode}
-select a (\a0..an = bs) ..
-\end{CleanCode}
-is transformed to:
-\begin{CleanCode}
-var _ys = Sapl.eval(ta);
-switch(_ys[0]) {
-	case 0: var a0 = _ys[1][1],..,  an = _ys[1][n+1];
-	        tbs;
+var _tmp = Sapl.eval(tf);
+switch(_tmp[0]) {
+	case 0: var x0 = _tmp[1][1], ..., xn = _tmp[1][n+1];
+	        tb;
             break;
-	..
-}
+	...
+};
 \end{CleanCode}
-Evaluating the first argument of a \texttt{select} will result in a constructor array. 
-The first argument in the array represents the place of the constructor in its type definition
-and can therefore be used to select the right case in the definition.
-The arguments in the $\lambda$-expression of a case are bound to the corresponding
-arguments of the constructor in the \texttt{var} declaration (see also examples).
+where \texttt{tf} and \texttt{tb} are the result of the translation of
+\texttt{f} and \texttt{b}, respectively. The
 
-\subsubsection{\textsf{if} constructs} 
-An \texttt{if} construct is transformed to an inline \JS \texttt{if} construct:
-\begin{CleanCode}
-if a b c
-\end{CleanCode}
-is transformed to:
-\begin{CleanCode}
-Sapl.eval(a) ? tb : tc;
-\end{CleanCode}
-Here we use the fact that \Sapl's \texttt{True} and \texttt{False} are mapped onto \JS's \texttt{true} and \texttt{false}.
+Evaluating the first argument of a \texttt{select} statement yields an array representing a constructor (see above). The first argument in this array 
+represents the position of the constructor in its type definition, and is used 
+to select the right case in the definition. The parameters of the $\lambda$-
+expression for each case are bound to the corresponding arguments of the constructor in the \texttt{var} declaration (see also examples).
 
-\subsubsection{Primitive values}
-Primitive values do not need to be transformed. There representation in \Sapl and \JS are the same.
+\subsubsection{\textsf{if} statements} 
+An \texttt{if} statement in \Sapl is translated to the conditional operator in 
+\JS, as follows:
+\begin{CleanCode}
+if p t f
+\end{CleanCode}
+is translated to:
+\begin{CleanCode}
+Sapl.eval(tp) ? tt : tf;
+\end{CleanCode}
+where \texttt{tp}, \texttt{tt}, \texttt{tf} are the result of the translation of
+\texttt{p}, \texttt{t}, \texttt{f}, respectively. This translation works because
+booleans in \Sapl and \JS have the same representation.
 
 \subsubsection{Built-in Functions}
-Built-in functions for arithmetic operations are pre-defined in the system.
-For example the \textsf{add} function  is defined as follows:
+\Sapl defines several built-in functions for arithmetic and logical operations.
+As an example, the \texttt{add} function is defined as follows:
 \begin{CleanCode}
-function add(a,b) {return Sapl.eval(a) + Sapl.eval(b);}
+function add(x, y) { return Sapl.eval(x) + Sapl.eval(y); }
 \end{CleanCode}
-The addition operator is, of course, strict in its arguments. 
-Therefore, \texttt{eval} is applied to these arguments, before applying the + operation.
-
-\subsubsection{Result Expressions}
-If an expression represents the result of a function, it should be preceded by the \JS keyword \texttt{return}.
-Examples of expressions that can be the result of a function are: the right-hand side of a function definition; 
-the right-hand side of a \texttt{let}; 
-the body of a $\lambda$-expression in a \texttt{select} case; 
-the \texttt{if} and \texttt{else} part of an \texttt{if} construct (see also examples).
+Unlike user-defined functions, built-in functions such as \texttt{add} have
+strict evaluation semantics. To guarantee that they are in normal form when the 
+function is called, the function \texttt{Sapl.eval} is applied to its arguments
+(see section \ref{eval}).
 
 \subsection{Examples}
-The following \Sapl definitions:
+The following definitions in \Sapl:
 \begin{CleanCode}
 :: list = Nil | Cons x xs	
 ones = let os = Cons 1 os in os
 fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
-sum as = select as 0 (\x xs = add x (sum xs))
+sum xxs = select xxs 0 (\x xs = add x (sum xs))
 \end{CleanCode}
 %
-are translated to:
+are translated to the following definitions in \JS:
 \begin{CleanCode}
-function Nil() {return [0, ['nil']];}
-function Cons(x, xs) {return [1, ['Cons', x, xs]];}
+function Nil() { return [0, ['nil']]; }
+function Cons(x, xs) { return [1, ['Cons', x, xs]]; }
 
-function ones(){var os = Cons(1,function(){return os;}); return os;}
+function ones() { var os = Cons(1, function() { return os; }); return os; }
 
-function fac(n){
-    return (eq(n,0)) ? 1 : [mult,[n,[fac,[[sub,[n,1]]]]]];
+function fac(n) {
+    return (eq(n,0)) ? 1 : [mult, [n, [fac, [[sub, [n, 1]]]]]];
 }
 
-function sum(as){
-	var _ys = Sapl.eval(as);
-	switch(_ys[0]){
+function sum(as) {
+	var _tmp = Sapl.eval(as);
+	switch (_tmp[0]) {
 		case 0: return 0;
-		case 1: var x = _ys[1][1], xs = _ys[1][2]; 
-				return [add,[x,[sum,[xs]]]];
-	}
+		case 1: var x = _tmp[1][1], xs = _tmp[1][2]; 
+				return [add, [x, [sum, [xs]]]];
+	};
 }
 
 \end{CleanCode}
-The examples show that the transformation is straightforward and 
-that the structure of the original functions is preserved in the translation.
+The examples show that the translation is straightforward and preserves the
+structure of the original definitions.
 
-\subsubsection{The \texttt{eval} function}
+\subsection{The \texttt{eval} function}
+\label{eval}
 The generated \JS functions cannot be executed directly, because they contain unevaluated thunks.
 The \textsf{eval} function is used to evaluate these thunks (turn them into head-normal-form).
 \textsf{eval} must do a case analysis on the expression it is offered.

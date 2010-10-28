@@ -30,15 +30,15 @@ strict functional languages, which simplifies their translation to \JavaScript
 considerably.
 
 One possible strategy for implementing a functional language in the browser
-using JavaScript is to use the Google Webtoolkit to translate the \Java Applet
-implementation of the \Sapl interpreter to \JavaScript. However, for this
+using JavaScript is to use the Google Web Toolkit (GWT) to translate the \Java 
+Applet implementation of the \Sapl interpreter to \JavaScript. However, for this
 particular case, this is a naive approach: \JavaScript provides several
-features, not available in \Java, that provide opportunities for a more
-efficient implementation. Among these is the fact that, unlike \Java,
-\JavaScript, is a {\em dynamic} language, allowing for solutions that are based
-on compilation rather than interpretation. This paper describes an
-implementation of the non-strict purely functional language \Sapl in
-\JavaScript, written with these features in mind.
+features, not available in \Java, that offer opportunities for a more efficient 
+implementation. Among these is the fact that, unlike \Java, \JavaScript, is a 
+{\em dynamic} language, allowing for solutions that are based on compilation 
+rather than interpretation. This paper describes an implementation of the
+non-strict purely functional language \Sapl in \JavaScript, written with these 
+features in mind.
 
 We implemented a compiler that translates \Sapl to \JS expressions. Its
 implementation is based on the representation of unevaluated expressions
