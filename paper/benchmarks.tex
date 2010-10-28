@@ -89,19 +89,25 @@ We did some dedicated tests that showed that memory allocation for the \Java\ \S
 Therefore, we included an estimation of the percentage of time spent on memory management for all benchmarks ran on  the \Sapljs interpreter.
 
 \subsubsection{Results}
-The following benchmarks run faster on \Sapljs than on the \Sapl interpreter or at comparable speed: \textsf{Symbolic Primes}, \textsf{Fibonacci}, \textsf{Interpreter} and \textsf{Knights}. These benchmarks all benefit considerably from the optimizations, with \textsf{Fibonacci} as the most exceptional case (40 times faster).
+The following benchmarks run faster on \Sapljs than on the \Sapl interpreter or at comparable 
+speed: \textsf{Symbolic Primes}, \textsf{Fibonacci}, \textsf{Interpreter} and \textsf{Knights}. These 
+benchmarks all benefit considerably from the optimizations, with \textsf{Fibonacci} as the most 
+exceptional case (40 times faster).
 Note that in the optimized version of \textsf{Fibonacci} no time is spent on memory management.
 
 The worst performing benchmark (almost 5 times slower) is \textsf{Parser Combinators}. 
 This benchmarks profits only modestly  from the optimizations and spends relatively much time 
-in memory management operations. Is is also an atypical benchmark in the sense that almost all functions are higher order, which will not be the case for
-typical functional programs. Note, that for the original \Sapl interpreter this is one of the best benchmarks (see \cite{JKP}), 
+in memory management operations. Is is also an atypical benchmark in the sense that almost all 
+functions are higher order, which will not be the case for
+typical functional programs. Note, that for the original \Sapl interpreter this is one of the best 
+performing benchmarks (see \cite{JKP}), 
 performing at a speed that is even competitive with compiler implementations. 
 %The original \Sapl interpreter realizes a pure graph-reduction implementation in a fast way. 
 
 All other benchmarks are between 1.5 and 2.3 times slower than the original \Sapl interpreter.
 
-We conclude that  the \Sapljs implementation offers a performance that is competitive with that of the \Sapl interpreter and therefore
+We conclude that  the \Sapljs implementation offers a performance that is competitive with that of the 
+\Sapl interpreter and therefore
 with other interpreters for lazy functional programming languages.
 
 
