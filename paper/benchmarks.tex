@@ -21,7 +21,7 @@ prime number.
 calculating the 160th prime number.
 \item {\bf \textsf{Interpreter}} A small \Sapl  interpreter. As an example we coded the prime
 number sieve for this interpreter and calculated the 30th prime number.
-\item { \textsf{Fibonacci}} The (naive) Fibonacci function, calculating \texttt{fib 35}.
+\item {\bf  \textsf{Fibonacci}} The (naive) Fibonacci function, calculating \texttt{fib 35}.
 \item {\bf \textsf{Match}} Nested pattern matching (5 levels deep) repeated 160000 times.
 \item {\bf \textsf{Hamming}} The generation of the list of Hamming numbers (a cyclic
 definition) and taking the 1000th Hamming number, repeated 1000 times.
@@ -54,13 +54,13 @@ routines.
 We ran the tests for the following versions of \Sapl: 
 \begin{itemize}
 \item{\Sapl}: the \Java Applet version of \Sapl;
-\item{\Sapljs}: the \Sapljs version including the normal form optimizations and the inlining of arithmetic operations;
+\item{\Sapljs}: the \Sapljs version including the normal form optimization and the inlining of arithmetic operations;
 \item{\textsf{Sapljs nopt}}: the version not using these optimizations.
 \end{itemize}
 We also  included the estimated percentage of time spent on memory management for the \Sapljs version.
 The results can be found in Table \ref{sapljs:table}.
 \input{figTests}
-%\vspace{-1cm}
+\vspace{-1cm}
 
 \subsection{Evaluation of the Benchmark tests}
 Before analysing the results we first make some general remarks about the performance of \Java, \JS and the \Sapl interpreter which are relevant for
@@ -68,28 +68,30 @@ a better understanding of the results. In general it is difficult to give absolu
 They often also depend on the platform (processor), the operating system running on it and the particular benchmarks used to compare. 
 Therefore, all numbers given should be interpreted as global indications. 
 
-According to the the language shoot-out site \cite{SHOOTOUT} \Java 
+According to the language shoot-out site \cite{SHOOTOUT} \Java 
 programs run between 3 and 5 times faster than \JS programs running on V8. 
 So a reimplementation of the \Sapl interpreter in \JS is expected to run between 3 to 5 times as slow as the \Sapl interpreter.
-%A number of small tests on the platform we used indicated a speed difference of a factor of 3.
+
 
 We could not run all benchmarks as long as we wished because of stack limitations for V8 \JS in Google Chrome. 
 It supports a standard (not user modifiable) stack of only 30k at this moment.
 This is certainly enough for most \JS programs, but not for a number of our benchmarks that can be deeply recursive. 
-%Also forced \textsf{eval} calls can become deeply recursive. 
-This limited the size of the runs of the following benchmarks: \textsf{Interpreter}, all sorting benchmarks, and the \textsf{Prolog} and \textsf{Parser Combinator} benchmark. 
-Another benchmark we used previously: \texttt{twice twice twice twice inc 0}, could not be run at all.
+This limited the size of the runs of the following benchmarks: \textsf{Interpreter}, 
+all sorting benchmarks, and the \textsf{Prolog} and \textsf{Parser Combinator} benchmark. 
+Another benchmark that we used previously, and that could not be ran at all  in \Sapljs is:  \texttt{twice twice twice twice inc 0}.
 
-For a lazy functional language the creation of thunks and the re-collection of them later on, often takes a substantial part of program run-times.
+For a lazy functional language the creation of thunks and the re-collection of them later on, 
+often takes a substantial part of program run-times.
 It is therefore important to do some special tests that say something the speed of memory (de-)allocation.
 The \Sapl interpreter uses a dedicated memory management unit (see \cite{JKP}) not depending on \Java memory management. 
 The better performance of the \Sapl interpreter in comparison with the other interpreters partly depends on its fast memory management.
 For the \JS implementation we rely on  the memory management of \JS itself.
-We did some dedicated tests that showed that memory allocation for the \Java\ \Sapl interpreter is about 4-6 times as fast as for the \JS implementation.
-Therefore, we included an estimation of the percentage of time spent on memory management for all benchmarks ran on  the \Sapljs interpreter.
+We did some dedicated tests that showed that memory allocation for 
+the \Java\ \Sapl interpreter is about 5-6 times as fast as for the \JS implementation.
+Therefore, we included an estimation of the percentage of time spent on memory management for all benchmarks ran in \Sapljs.
 
 \subsubsection{Results}
-The following benchmarks run faster on \Sapljs than on the \Sapl interpreter or at comparable 
+The following benchmarks run faster in \Sapljs than in the \Sapl interpreter or at comparable 
 speed: \textsf{Symbolic Primes}, \textsf{Fibonacci}, \textsf{Interpreter} and \textsf{Knights}. These 
 benchmarks all benefit considerably from the optimizations, with \textsf{Fibonacci} as the most 
 exceptional case (40 times faster).
@@ -98,13 +100,12 @@ Note that in the optimized version of \textsf{Fibonacci} no time is spent on mem
 The worst performing benchmark (almost 5 times slower) is \textsf{Parser Combinators}. 
 This benchmarks profits only modestly  from the optimizations and spends relatively much time 
 in memory management operations. Is is also an atypical benchmark in the sense that almost all 
-functions are higher order, which will not be the case for
-typical functional programs. Note, that for the original \Sapl interpreter this is one of the best 
+functions are higher order, which is something that will not be the case for
+normal functional programs. Note, that for the original \Sapl interpreter this is one of the best 
 performing benchmarks (see \cite{JKP}), 
 performing at a speed that is even competitive with compiler implementations. 
-%The original \Sapl interpreter realizes a pure graph-reduction implementation in a fast way. 
 
-All other benchmarks are between 1.5 and 2.3 times slower than the original \Sapl interpreter.
+All other benchmarks run between 1.5 and 2.3 times slower than in the original \Sapl interpreter.
 
 We conclude that  the \Sapljs implementation offers a performance that is competitive with that of the 
 \Sapl interpreter and therefore
@@ -113,20 +114,8 @@ with other interpreters for lazy functional programming languages.
 
 \subsection{Alternative Memory Management?}
 For many \Sapljs examples a substantial part of their run-time is spent on memory management. 
-They can only run significantly faster after a more efficient memory management is realized.
+They can only run significantly faster after a more efficient memory management is realized or after other optimizations are realized.
 It is tempting to implement a memory management similar to that of the \Sapl interpreter. 
 But this memory management relies heavily on representing graphs by binary trees, 
 which does not fit with our model for turning thunks into \JS function calls which depends heavily on using arrays to
 represent thunks.
-
-%We may conclude that memory management take a considerably percentage of execution time for the \Sapljs programs than for
-%the \Sapl interpreter. This explains why a number of the benchmarks execute slower than for the \Sapl interpreter, despite the fact
-%that the resulting code can be compiled instead of being interpreted as in \Sapl.
-
-%For example, \textsf{fibonacci} natively implemented in \Java runs 3 times as fast than programmed natively for \JS.
-%Adding strictness annotations in the \Sapl code of \textsf{fibonacci} takes care that the \JS translation result in the same code 
-%as the native one. 
-
-%\subsection{Alternative Optimizations}
-%In \JS it is possible to explicitly make curried versions of functions of mare than 1 argument.
-
