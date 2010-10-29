@@ -25,7 +25,7 @@ For the following \Sapl constructs we must describe how they are translated to
     \item identifiers, such as variable and function names;
     \item let constructs;
 	\item function definitions;
-	\item function applications;
+	\item applications;
 	\item constructor definitions;
 	\item select statements;
 	\item if statements;
@@ -75,35 +75,35 @@ function f(x1, ..., xn) { tbody }
 \end{CleanCode}
 where \texttt{tbody} is the result of the translation of \texttt{body}.
 
-\subsubsection{Function applications} 
-Every \Sapl expression is a function application. Due to \JS's non-eager 
-evaluation semantics, function applications cannot be translated from \Sapl to 
+\subsubsection{Applications} 
+Every \Sapl expression is an application. Due to \JS's eager 
+evaluation semantics, applications cannot be translated from \Sapl to 
 \JS directly. Instead, unevaluated expressions (or \emph{thunks}) in \Sapl are translated to arrays in \JS:
 \begin{CleanCode}
-f x0 .. xn 
+x0 x1 .. xn 
 \end{CleanCode}
 is translated to:
 \begin{CleanCode}
-[tf, [tx0, ..., txn]]
+[tx0, [tx1, ..., txn]]
 \end{CleanCode}
-where \texttt{tf} and \texttt{txi} are the result of the translation of 
-\texttt{f} and \texttt{xi}, respectively.
+where \texttt{txi} is the result of the translation of \texttt{xi}.
 
 \subsubsection{Constructor definitions} 
 Constructor definitions in \Sapl are translated to arrays in \JS, in such a way 
 that they can be used in a \texttt{select} construct to select the right case. 
 A \Sapl type definition containing constructors is translated as follows:
 \begin{CleanCode}
-:: typename = ... | Ck a0 ... an | ...
+:: typename = ... | Ck x0 ... xn | ...
 \end{CleanCode}
 is transformed to:
 \begin{CleanCode}
 ... function Ck(x0, ..., xn) { return [k, [`Ck', tx0, ..., txn]]; } ...
 \end{CleanCode}
 where \texttt{k} is a positive integer, corresponding to the position of the 
-constructor in the original type definition, and \texttt{txi} is the result of
-the translation of \texttt{xi}. The name of the constructor, \texttt{`Ck'}, is 
-put into the result for debugging purposes.
+constructor in the original type definition, 
+and \texttt{txi} is the result of the translation of \texttt{xi}. 
+The name of the constructor, \texttt{`Ck'}, is 
+put into the result for printing purposes.
 
 \subsubsection{\textsf{select} statements} 
 A \texttt{select} statement in \Sapl is translated to a \texttt{switch} 
@@ -122,7 +122,7 @@ switch(_tmp[0]) {
 };
 \end{CleanCode}
 where \texttt{tf} and \texttt{tb} are the result of the translation of
-\texttt{f} and \texttt{b}, respectively. The
+\texttt{f} and \texttt{b}, respectively. 
 
 Evaluating the first argument of a \texttt{select} statement yields an array representing a constructor (see above). The first argument in this array 
 represents the position of the constructor in its type definition, and is used 
@@ -158,6 +158,7 @@ function is called, the function \texttt{Sapl.eval} is applied to its arguments
 The following definitions in \Sapl:
 \begin{CleanCode}
 :: list = Nil | Cons x xs	
+
 ones = let os = Cons 1 os in os
 fac n = if (eq n 0) 1 (mult n (fac (sub n 1)))
 sum xxs = select xxs 0 (\x xs = add x (sum xs))
