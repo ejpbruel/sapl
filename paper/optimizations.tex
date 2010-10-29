@@ -1,12 +1,12 @@
-\section{Alternative Optimizations}\label{sapljs:sec:optimizations}
+\section{Alternative Optimizations}
+\label{sapljs:sec:optimizations}
 
-%\subsection{Strictness Annotations}
-Using the transformations described in the previous sections the definition
-of the Fibonacci function:
+Using the translation scheme introduced in section \ref{sapljs}, the following 
+definition of the Fibonacci function, \texttt{fib}, in \Sapl:
 \begin{CleanCode}
 fib n = if (gt 2 n) 1 (add (fib (sub n 1)) (fib (sub n 2)))
 \end{CleanCode} 
-is transformed into:
+is translated to the following definition in \JS:
 \begin{CleanCode}
 function fib(n) {
     return n < 2 ? 1 : fib(eval(n) - 1) + fib(eval(n) - 2)
