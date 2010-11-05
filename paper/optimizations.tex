@@ -1,7 +1,7 @@
 \section{Alternative Optimizations}
 \label{sapljs:sec:optimizations}
-
-Using the translation scheme introduced in section \ref{sapljs}, the following 
+%\vspace{-0.3cm}
+Using the translation scheme introduced in section \ref{sapljs:sec:sapljs}, the following 
 definition of the Fibonacci function, \texttt{fib}, in \Sapl:
 \begin{CleanCode}
 fib n = if (gt 2 n) 1 (add (fib (sub n 1)) (fib (sub n 2)))
@@ -21,7 +21,7 @@ function fib(n) {
 The calls to \texttt{eval} are now gone, which results in a huge improvement in performance (3 times as fast). Indeed,
 this is how \texttt{fib} would have been written, had it been defined in \JavaScript
 directly. In this particular example, the use of eager evaluation did not affect
-the semantics of the function. However, this is not true in general. 
+the semantics of the function.  However, this is not true in general. 
 
 The \Clean to \Sapl compiler generates the strictness information needed to make these 
 optimizations. The implementation of this requires a number of adaptations in the translation rules

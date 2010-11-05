@@ -190,6 +190,7 @@ structure of the original definitions.
 
 \subsection{The \texttt{eval} function}
 \label{eval}
+%\vspace{-0.3cm}
 To emulate \Sapl's non-strict evaluation semantics for function applications, 
 we represented unevaluated expressions (thunks) as arrays in \JS. Because \JS
 treats these arrays as primitive values, some way is needed to explicitly reduce
@@ -197,11 +198,12 @@ thunks to normal form when their value is required. This is the purpose of the
 \texttt{Sapl.eval} function. It performs a case analysis on an expression and
 undertakes different actions based on its type:
 
+\vspace{-0.5cm}
 \subsubsection{Constants}
 If the expression is a constant or a constructor, it is returned immediately. 
 Constants and constructors are already in normal form.
 
-\subsubsection{Thunks}
+\vspace{-0.5cm}\subsubsection{Thunks}
 If the expression is a thunk of the form \texttt{[f, [xs]]}, it is transformed 
 into a function call \texttt{f(xs)}, and \texttt{Sapl.eval} is applied 
 recursively to the result (this is necessary because the result of a function 
@@ -221,11 +223,13 @@ larger than the arity of the function, a new thunk is constructed from the
 result of the call and the remainder of the arguments, and \texttt{Sapl.eval}
 is applied recursively to the result.
 
+\vspace{-0.5cm}
 \subsubsection{Boxed values}
 If the expression is a boxed value of the form \texttt{[x]}, the value 
-\texttt{x} is unboxed and returned immediately (only primitive values are boxed,
-which are in normal form).
+\texttt{x} is unboxed and returned immediately (only primitive values are boxed).
+%which are in normal form).
 
+\vspace{-0.5cm}
 \subsubsection{Curried applications}
 If the expression is a curried application of the form
 \texttt{[[f, [xs]], [ys]]}, it is transformed into  \texttt{[f, [xs ++ ys]]}, 
@@ -238,7 +242,7 @@ where unevaluated expressions (thunks) are translated to arrays. The
 value is required. For ordinary function calls, our measurements indicate that 
 the use of \texttt{Sapl.eval} is more than 10 times slower than doing the same
 call directly. This constitutes a significant overhead. Fortunately, a simple
-compile time analysis reveals many opportunities to eliminating unnecessary 
+compile time analysis reveals many opportunities to eliminate unnecessary 
 thunks in favor of such direct calls. Thus, expressions of the form:
 \begin{CleanCode}
 Sapl.eval([f, [x1, ..., xn])
@@ -259,14 +263,13 @@ occurs:
 \end{itemize}
 
 As an additional optimization, arithmetic operations are inlined wherever they
-occur. With these optimizations added, the earlier definitions ot \texttt{sum} 
+occur. With these optimizations added, the earlier definitions of \texttt{sum} 
 and \texttt{fac} are now translated to:
 \begin{CleanCode}
 function fac(n){
 	return (Sapl.eval(n) == 0) ? 1 : Sapl.eval(n) * fac(Sapl.eval(n) - 1);
 }
-\end{CleanCode}
-\begin{CleanCode}
+
 function sum(xxs) {
 	var _tmp = Sapl.eval(xxs);
 	switch(_tmp[0]){
