@@ -139,6 +139,7 @@ var sapl2js = function () {
             def.name    = name;
             def.bind    = params.length > 0 ? {
                 type    : "\\",
+                text    : "\\",
                 params  : params,
                 body    : expr()
             } : expr();
@@ -183,7 +184,7 @@ var sapl2js = function () {
                     if (i < 0)
                         throw "Reference to undefined symbol '" + node.text + "' "
                             + "on line " + node.line;
-                    if (sym.bind.type == "ident")
+                    if (sym.bind.type == "ident") 
                         sym.bind = resolve(sym.bind);
                     return sym.bind;
                 }
@@ -199,13 +200,13 @@ var sapl2js = function () {
                 if (params.some(function (param) {
                     return param.strict;
                 })) {
-                    var body = node;
-                
+                    var test = node;
+                    
                     params.forEach(function (param) {
-                        body = {
+                        test = {
                             type    : "@",
-                            fun     : body,
-                            arg     : param.name
+                            arg     : param.name,
+                            fun     : test
                         };
                     });
                     return {
@@ -216,7 +217,7 @@ var sapl2js = function () {
                                 strict  : false,
                                 name    : param.name
                             };
-                        }), body : body
+                        }), body : test
                     };
                 } else
                     return node;
@@ -244,7 +245,7 @@ var sapl2js = function () {
                 });
                 return str;
             case "=":
-                return "var " + code(name) + "=" + code(bind) + ";";
+                return "var " + code(name) + "=" + code(bind, true) + ";";
             case "\\":
                 var str;
 
@@ -254,7 +255,8 @@ var sapl2js = function () {
                         bind    : param
                     });
                 });
-                str = "(function(" + params.map(code) + "){return(" + code(wrap(body), true) + ");})";
+                str = "(function(" + params.map(code) + "){return("
+                    + code(wrap(body), true) + ");})";
                 params.forEach(function (param) {
                     symtab.pop();
                 });
@@ -291,10 +293,10 @@ var sapl2js = function () {
                          + "(" + code(args[1]) + ")" + ":"
                          + "(" + code(args[2]) + ")";
                 default:
+                    var params = resolve(node).params;
+
                     args = args.map(wrap);
                     if (strict) {
-                        var params = resolve(node).params;
-
                         str = code(node);
                         if (params) {
                             var length = params.length;
@@ -307,10 +309,12 @@ var sapl2js = function () {
                                 str = str + "(" + prefix + ")";
                             }
                         }
-                    } else
+                    } else 
                         str = code(wrap(node));
                     if (args.length > 0) {
-                        str = "[" + str + "," + "[" + args.map(function (arg) { return code(arg, false); }) + "]" + "]";
+                        str = "[" + str + "," + "[" + args.map(function (arg) {
+                            return code(arg, false);
+                        }) + "]" + "]";
                         if (strict)
                             str = "sapl2js.eval(" + str + ")";
                     }
@@ -332,7 +336,9 @@ var sapl2js = function () {
 
     var PRELUDE = "\
         add 'a 'b   = + a b,\
-        sub 'a 'b   = - a b\
+        sub 'a 'b   = - a b,\
+        mul 'a 'b   = * a b,\
+        div 'a 'b   = / a b\
     ";
 
     function sapl2js(sapl) {
@@ -389,7 +395,7 @@ var sapl2js = function () {
     return sapl2js;
 }();
 
-str = sapl2js(fs.readFileSync(process.argv[2]).toString());
+var str = sapl2js(fs.readFileSync(process.argv[2]).toString());
 
 util.puts(str);
 util.puts(eval(str));
